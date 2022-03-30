@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
 =================================================
-@Project -> File   ：srv_util.py -> constant
+@Project   ： tk_smart
 @Author ：Ma fei
 @Date   ：2022-03-28 08:20
 @Desc   ：公共常量类
@@ -13,6 +13,7 @@ comm_db_pwd = '123'  # 密码
 comm_db_host = '127.0.0.1'  # DB服务器IP
 comm_db_charset = 'utf8'  # 字符集
 comm_unit_type = ['数量', '重量', '容量', '面积', '长度', '自定义']
+comm_role = ['超级用户', '仓库管理', '订单下发', '订单审核', '财务', '生产', '销售', '采购']
 company_name = 'company_name'
 company_bank = 'company_bank'
 company_account = 'company_account'
