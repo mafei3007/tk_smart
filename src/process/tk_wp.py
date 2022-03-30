@@ -4,7 +4,7 @@
 @Project   ： tk_smart
 @Author ：Ma fei
 @Date   ：2022-03-30 10:27
-@Desc   ：人员管理
+@Desc   ：工序管理
 ==================================================
 """
 import datetime
@@ -254,9 +254,7 @@ def del_em(js):
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'delete from t_em_role where em_id=%s'
-        cur.execute(str_sql, args=[em_id])
-        str_sql = 'delete from t_em_team where em_id=%s'
+        str_sql = 'delete from t_em_role where id=%s'
         cur.execute(str_sql, args=[em_id])
         if force:
             str_sql = 'delete from t_em where id=%s'

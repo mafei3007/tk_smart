@@ -4,7 +4,7 @@
 @Project   ： tk_smart
 @Author ：Ma fei
 @Date   ：2022-03-28 08:36
-@Desc   ：采购订单管理
+@Desc   ：询价单管理
 ==================================================
 """
 import datetime
