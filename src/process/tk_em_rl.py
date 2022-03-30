@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from src.tk_util import write_log
+from tk_util import write_log
 from process.srv_util import get_tenant_cnn, free_obj
 
 

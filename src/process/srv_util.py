@@ -18,7 +18,7 @@ import os
 import time
 import qrcode
 from pathlib import Path
-from src.tk_util import write_log, deal_db_err
+from tk_util import write_log, deal_db_err
 from db.comm_cnn import CommonCnn
 
 g_tenant = 'tk_huawei'

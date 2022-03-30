@@ -26,3 +26,4 @@ account_delay_day = 'account_delay_day'  # 账期宽限天数
 contract_validity = 'contract_validity'  # 合同有效期（年)
 free_maintenance_year = 'free_maintenance_year'  # 免费维保年限
 maintenance_year = 'maintenance_year'  # 维保年限
+default_pwd='123'

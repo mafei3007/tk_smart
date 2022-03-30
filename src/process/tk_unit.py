@@ -8,9 +8,9 @@
 ==================================================
 """
 import datetime
-from src.tk_util import write_log
+from tk_util import write_log
 from process.srv_util import get_tenant_cnn, free_obj
-from src.constant import comm_unit_type
+from constant import comm_unit_type
 
 
 # 查询单位信息

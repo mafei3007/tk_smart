@@ -11,7 +11,7 @@ import datetime
 import threading
 import time
 
-from src.tk_util import write_log
+from tk_util import write_log
 from process.srv_util import get_tenant_cnn, free_obj
 from src.process.tk_config import get_idx
 
@@ -24,7 +24,7 @@ def get_pc_name(tenant):
     try:
         pc_name = code + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + '_%d' % get_idx(tenant, code)
         str_msg = '获取订单名称%s' % pc_name
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         return pc_name
     finally:
         lock.release()
@@ -88,7 +88,7 @@ def get_pc_paid_info(js):
             str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         cur.execute(str_sql, args=qry_args)
         rr = cur.fetchall()
         for r in rr:
@@ -165,7 +165,7 @@ def get_pc_checkin(js):
             str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         cur.execute(str_sql, args=qry_args)
         rr = cur.fetchall()
         for r in rr:
@@ -249,7 +249,7 @@ def get_pc(js):
             str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         cur.execute(str_sql, args=qry_args)
         rr = cur.fetchall()
         for r in rr:
@@ -280,7 +280,7 @@ def add_pc(js):
     sp_id = js['sp_id']
     pc_count = js['pc_count']
     price = js['price']
-    em_id = js['em_id']
+    opt_id = js['opt_id']
     remark = js['remark']
     if pc_count < 0.0001:
         str_msg = '采购数量必须大于0'
@@ -313,10 +313,10 @@ def add_pc(js):
         str_sql = 'insert into t_pc(name,gd_id,em_id,sp_id,price,count,to_pay_amount,status,remark,pay_status) ' \
                   'values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql,
-                    args=[pc_name, gd_id, em_id, sp_id, price, pc_count, pc_count * price, '待审核', remark, '待审核'])
+                    args=[pc_name, gd_id, opt_id, sp_id, price, pc_count, pc_count * price, '待审核', remark, '待审核'])
         str_msg = '创建采购订单%s' % pc_name
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
-        cur.execute(str_sql, args=[em_id, str_msg])
+        cur.execute(str_sql, args=[opt_id, str_msg])
         js_ret['result'] = True
         return js_ret
     finally:
@@ -332,7 +332,7 @@ def approval_pc(js):
     tenant = js['tenant']
     pc_id = js['pc_id']
     approval_result = js['approval_result']
-    em_id = js['em_id']
+    opt_id = js['opt_id']
     audit_comments = js['audit_comments']
     cnn = None
     cur = None
@@ -358,9 +358,9 @@ def approval_pc(js):
             ap_args = ['草稿', audit_comments, '待审核', pc_id]
             str_msg = '订单[%d]审核不通过，审核信息为[%s]' % (pc_id, audit_comments)
         cur.execute(str_sql, args=ap_args)
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
-        cur.execute(str_sql, args=[em_id, str_msg])
+        cur.execute(str_sql, args=[opt_id, str_msg])
         js_ret['result'] = True
         return js_ret
     finally:
@@ -377,7 +377,7 @@ def edit_pc(js):
     pc_id = js['pc_id']
     pc_count = js['pc_count']
     price = js['price']
-    em_id = js['em_id']
+    opt_id = js['opt_id']
     remark = js.get('remark', '')
     if pc_count < 0.0001:
         str_msg = '采购数量必须大于0'
@@ -415,9 +415,9 @@ def edit_pc(js):
             str_msg = str_msg + ',价格%.f->%.f' % (last_price, price)
         if pc_count != last_count:
             str_msg = str_msg + ',订货量%.f->%.f' % (last_count, pc_count)
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
-        cur.execute(str_sql, args=[em_id, str_msg])
+        cur.execute(str_sql, args=[opt_id, str_msg])
         js_ret['result'] = True
         return js_ret
     finally:
@@ -432,7 +432,7 @@ def del_pc(js):
     js_ret['result'] = False
     tenant = js['tenant']
     pc_id = js['pc_id']
-    em_id = js['em_id']
+    opt_id = js['opt_id']
     cnn = None
     cur = None
     try:
@@ -454,9 +454,9 @@ def del_pc(js):
         str_sql = 'delete from t_pc where id=%s'
         cur.execute(str_sql, args=[pc_id])
         str_msg = '删除采购订单%d/%s' % (pc_id, pc_name)
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
-        cur.execute(str_sql, args=[em_id, str_msg])
+        cur.execute(str_sql, args=[opt_id, str_msg])
         js_ret['result'] = True
         return js_ret
     finally:
@@ -471,7 +471,7 @@ def pay_pc(js):
     js_ret['result'] = False
     tenant = js['tenant']
     pc_id = js['pc_id']
-    em_id = js['em_id']
+    opt_id = js['opt_id']
     amount = js['amount']
     pay_finished = js.get('pay_finished', False)
     remark = js.get('remark', '')
@@ -506,11 +506,11 @@ def pay_pc(js):
         str_sql = 'update t_pc set paid_amount=paid_amount+%s,pay_status=%s where id=%s'
         cur.execute(str_sql, args=[amount, pay_status, pc_id])
         str_sql = 'insert into t_pc_pay(pc_id,amount,em_id,remark) values(%s,%s,%s,%s)'
-        cur.execute(str_sql, args=[pc_id, amount, em_id, remark])
+        cur.execute(str_sql, args=[pc_id, amount, opt_id, remark])
         str_msg = '支付采购订单%d/%s，金额%.2f' % (pc_id, pc_name, amount)
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
-        cur.execute(str_sql, args=[em_id, str_msg])
+        cur.execute(str_sql, args=[opt_id, str_msg])
         js_ret['result'] = True
         return js_ret
     finally:
@@ -525,7 +525,7 @@ def return_pc(js):
     js_ret['result'] = False
     tenant = js['tenant']
     pc_id = js['pc_id']
-    em_id = js['em_id']
+    opt_id = js['opt_id']
     count = js['count']
     bc = js['bc']
     return_type = js['return_type']
@@ -573,11 +573,11 @@ def return_pc(js):
         str_sql = 'update t_pc set rec_count=rec_count+%s where id=%s'
         cur.execute(str_sql, args=[count, pc_id])
         str_sql = 'insert into t_pc_return(pc_id,em_id,count,type,remark,barcode) values(%s,%s,%s,%s,%s,%s)'
-        cur.execute(str_sql, args=[pc_id, em_id, count, return_type, remark, bc])
+        cur.execute(str_sql, args=[pc_id, opt_id, count, return_type, remark, bc])
         str_msg = '采购订单%d/%s退货%.2f，批次为%s' % (pc_id, pc_name, count, bc)
-        write_log(str_msg,tenant=tenant)
+        write_log(str_msg, tenant=tenant)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
-        cur.execute(str_sql, args=[em_id, str_msg])
+        cur.execute(str_sql, args=[opt_id, str_msg])
         js_ret['result'] = True
         return js_ret
     finally:

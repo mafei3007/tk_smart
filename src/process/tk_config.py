@@ -8,9 +8,9 @@
 ==================================================
 """
 import datetime
-from src.tk_util import write_log
+from tk_util import write_log
 from process.srv_util import get_tenant_cnn, free_obj
-from src.constant import company_name, company_bank, company_account, company_credit_code, company_address
+from constant import company_name, company_bank, company_account, company_credit_code, company_address
 
 
 # 获取序号
