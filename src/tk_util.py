@@ -82,10 +82,11 @@ def exec_common_sql(str_sql, args=None):
         cnn.close()
 
 
-def send_message(url, method='GET', js_body=None):
+def send_message(url, method='GET', js_body=None, js_header=None):
     status = 404
     js_resp = dict()
-    js_header = {'Content-type': 'application/json'}
+    if js_header:
+        js_header = {'Content-type': 'application/json'}
     try:
         http_obj = httplib2.Http(timeout=30)  # 默认超时30秒
         response, content = http_obj.request(url, method=method, headers=js_header,
@@ -118,19 +119,20 @@ def write_log(str_msg, tenant=None):
 
 
 def main():
-    str_sql = 'select * from t_city'
-    t1 = time.time()
-    for i in range(1, 10):
-        print(qry_common_sql(str_sql))
-    print(time.time() - t1)
+    # str_sql = 'select * from t_city'
+    # t1 = time.time()
+    # for i in range(1, 10):
+    #     print(qry_common_sql(str_sql))
+    # print(time.time() - t1)
     # s_sql = "insert into t_tenant (tenant_code, company, contact, phone, telephone, addr, " \
     #         "email, reg_dt, reg_code) values('tk_huawei', '南京华为', '马飞', '13951623007', '025-8336666', " \
     #         "'软件大道101号', 'huawei@huawei.com', '2022-03-21 09:44:17', null);"
     # print(exec_sql(s_sql))
-    # url = 'http://192.168.1.5:5005/api/tk_huawei/test'
-    # method = 'GET'
-    # js_req = {'user': '马飞', 'code': 'hero'}
-    # print(send_message(url, method=method, js_body=js_req))
+    url = 'http://192.168.1.5:5005/login'
+    method = 'GET'
+    js_bd = {'user': '马飞', 'code': 'hero'}
+    js_hd = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
+    print(send_message(url, method=method, js_body=js_bd, js_header=js_hd))
     # bc_content = 'this is a test message'
     # print(get_bc_img(bc_content))
     # print(get_express_info(''))

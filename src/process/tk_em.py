@@ -21,8 +21,8 @@ def get_em_list(js):
     js_ret['data'] = list()
     tenant = js['tenant']
     em_id = js.get('id', None)
-    em_name = js.get('name', None)
-    em_code = js.get('code', None)
+    name = js.get('name', None)
+    code = js.get('code', None)
     status = js.get('status', '有效')
     duty = js.get('duty', None)
     start_dt = js.get('start_dt', None)
@@ -44,18 +44,14 @@ def get_em_list(js):
             str_sql = str_sql + ' and id=%s'
             str_count = str_count + ' and id=%s'
             qry_args.append(em_id)
-        if em_name:
+        if name:
             str_sql = str_sql + ' and name=%s'
             str_count = str_count + ' and name=%s'
-            qry_args.append(em_name)
-        if em_code:
+            qry_args.append(name)
+        if code:
             str_sql = str_sql + ' and code=%s'
             str_count = str_count + ' and code=%s'
-            qry_args.append(em_code)
-        if em_code:
-            str_sql = str_sql + ' and code=%s'
-            str_count = str_count + ' and code=%s'
-            qry_args.append(em_code)
+            qry_args.append(code)
         if duty:
             str_sql = str_sql + ' and duty=%s'
             str_count = str_count + ' and duty=%s'
@@ -173,7 +169,7 @@ def edit_em(js):
         cur.execute(str_sql, args=[em_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '人员信息%s不存在，无法删除' % em_id
+            str_msg = '人员信息%s不存在，无法修改' % em_id
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
@@ -254,9 +250,47 @@ def del_em(js):
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
+        str_sql = 'select count(*) from t_so where em_id=%s'
+        cur.execute(str_sql, args=[em_id])
+        r = cur.fetchone()
+        if r[0] == 0:
+            str_msg = '%s人员存在销售订单信息，不能删除，建议修改状态为 失效' % em_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_pc where em_id=%s'
+        cur.execute(str_sql, args=[em_id])
+        r = cur.fetchone()
+        if r[0] == 0:
+            str_msg = '%s人员存在采购订单信息，不能删除，建议修改状态为 失效' % em_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_checkin where em_id=%s'
+        cur.execute(str_sql, args=[em_id])
+        r = cur.fetchone()
+        if r[0] == 0:
+            str_msg = '%s人员存在入库信息，不能删除，建议修改状态为 失效' % em_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_checkout where em_id=%s'
+        cur.execute(str_sql, args=[em_id])
+        r = cur.fetchone()
+        if r[0] == 0:
+            str_msg = '%s人员存在出库信息，不能删除，建议修改状态为 失效' % em_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
         str_sql = 'delete from t_em_role where em_id=%s'
         cur.execute(str_sql, args=[em_id])
         str_sql = 'delete from t_em_team where em_id=%s'
+        cur.execute(str_sql, args=[em_id])
+        str_sql = 'delete from t_cust_em where em_id=%s'
         cur.execute(str_sql, args=[em_id])
         if force:
             str_sql = 'delete from t_em where id=%s'
@@ -276,7 +310,7 @@ def del_em(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'em_id': 1, 'opt_id': 1}
+    js = {'tenant': 'tk_huawei', 'id': 1, 'opt_id': 1}
     print(del_em(js))
 
 
