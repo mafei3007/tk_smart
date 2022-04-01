@@ -3,14 +3,13 @@
 =================================================
 @Project   ： tk_smart
 @Author ：Ma fei
-@Date   ：2022-03-30 10:27
+@Date   ：2022-04-01 19:23
 @Desc   ：供货商管理
 ==================================================
 """
 import datetime
 from tk_util import write_log
 from process.srv_util import get_tenant_cnn, free_obj
-from constant import default_pwd
 
 
 # 查询人员列表信息
