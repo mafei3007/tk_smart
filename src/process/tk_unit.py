@@ -103,7 +103,7 @@ def add_unit(js):
         cnn.close()
 
 
-# 修改单位
+# 修改单位，code 不能修改
 def edit_unit(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -147,7 +147,6 @@ def edit_unit(js):
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
-
         str_sql = 'update t_unit set remark=%s'
         e_args = [remark]
         if u_type != '':
