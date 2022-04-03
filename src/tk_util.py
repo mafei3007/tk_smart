@@ -16,9 +16,11 @@ import traceback
 import httplib2
 import os
 import time
+import smtplib
+from email.mime.text import MIMEText
 from pyDes import des, CBC, PAD_PKCS5
 from pathlib import Path
-from constant import des_secret_key
+from constant import des_secret_key, from_email, from_email_pwd
 
 
 def get_host():
@@ -97,6 +99,29 @@ def send_message(url, method='GET', js_body=None, js_header=None):
     return status, js_resp
 
 
+def send_email(to_addr, subject='默认主题', content=''):
+    from_addr = from_email
+    password = from_email_pwd
+    if len(from_addr) == 0 or len(password) == 0:
+        str_msg = '未配置发件人邮箱或密码，无法发送邮件'
+        write_log(str_msg)
+        return False
+    msg = MIMEText(content, 'txt', 'utf-8')
+    msg['From'] = from_addr
+    msg['To'] = to_addr
+    msg['Subject'] = subject
+    smtp = None
+    try:
+        smtp = smtplib.SMTP_SSL('smtp.163.com', 465)
+        smtp.ehlo("smtp.163.com")
+        smtp.login(from_addr, password)
+        smtp.sendmail(from_addr, [to_addr], msg.as_string())
+    finally:
+        if smtp:
+            smtp.close()
+    return True
+
+
 def write_log(str_msg, tenant=None):
     # dir_log = os.path.abspath(os.path.dirname(os.getcwd())) + os.sep + 'logs'
     dir_log = r'D:\py_workspace\tk_smart\logs'
@@ -121,8 +146,9 @@ def main():
     # js_bd = {'user': '马飞', 'code': 'hero'}
     # js_hd = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
     # print(send_message(url, method=method, js_body=js_bd, js_header=js_hd))
-    print(des_encrypt('gj123'))
-    print(des_decrypt('11a4627cd0dc9d2d'))
+    print(des_encrypt('gj12345'))
+    print(des_decrypt('25c0dbddf8be0d80'))
+    # send_email('mafeihong123@126.com', subject='邮件主题', content='This is a test memo.')
 
 
 if __name__ == '__main__':

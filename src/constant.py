@@ -44,7 +44,11 @@ free_maintenance_year = 'free_maintenance_year'  # 免费维保年限
 maintenance_year = 'maintenance_year'  # 维保年限
 
 # 默认密码
-default_pwd = '12345678'
+default_pwd = 'Admin123'
 
 # 密码加解密 密钥
 des_secret_key = '12345678'
+
+from_email = '13951623007@163.com'
+
+from_email_pwd = 'fh@123.com'

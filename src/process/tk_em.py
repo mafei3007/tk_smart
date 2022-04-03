@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, des_encrypt
 from db.comm_cnn import CommonCnn
 from constant import default_pwd
 
@@ -121,9 +121,10 @@ def add_em(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
+        encrypt_pwd = des_encrypt(password)
         str_sql = 'insert into t_em(code,name,duty,phone,email,password,addr,status,remark) values' \
                   '(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-        cur.execute(str_sql, args=[code, name, duty, phone, email, password, addr, status, remark])
+        cur.execute(str_sql, args=[code, name, duty, phone, email, encrypt_pwd, addr, status, remark])
         str_sql = 'select id from t_em where name=%s and code=%s'
         cur.execute(str_sql, args=[name, code])
         r = cur.fetchone()
@@ -168,7 +169,7 @@ def edit_em(js):
         str_sql = 'select count(*) from t_em where id=%s'
         cur.execute(str_sql, args=[em_id])
         r = cur.fetchone()
-        if r[0] > 0:
+        if r[0] == 0:
             str_msg = '人员信息%s不存在，无法修改' % em_id
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
@@ -199,8 +200,9 @@ def edit_em(js):
             str_sql = str_sql + ',email=%s'
             e_args.append(email)
         if password:
+            encrypt_pwd = des_encrypt(password)
             str_sql = str_sql + ',password=%s'
-            e_args.append(password)
+            e_args.append(encrypt_pwd)
         if addr:
             str_sql = str_sql + ',addr=%s'
             e_args.append(addr)

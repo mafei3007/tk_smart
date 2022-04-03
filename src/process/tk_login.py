@@ -8,7 +8,7 @@
 ==================================================
 """
 
-from tk_util import write_log, free_obj, des_encrypt, check_pwd
+from tk_util import write_log, free_obj, des_encrypt, check_pwd, send_email
 from db.comm_cnn import CommonCnn
 from constant import default_pwd
 
@@ -22,7 +22,7 @@ def login(js):
     opt_id = js['opt_id']
     code = js['code']
     password = js['password']
-    encrypt_pwd = des_encrypt(code + password)
+    encrypt_pwd = des_encrypt(password)
     cnn = None
     cur = None
     try:
@@ -76,7 +76,7 @@ def change_pwd(js):
         js_ret['result'] = False
         write_log(str_msg, tenant=tenant)
         return js_ret
-    encrypt_pwd = des_encrypt(code + password)
+    encrypt_pwd = des_encrypt(password)
     cnn = None
     cur = None
     try:
@@ -100,7 +100,7 @@ def change_pwd(js):
             js_ret['err_msg'] = str_msg
             js_ret['result'] = False
             return js_ret
-        encrypt_pwd = des_encrypt(code + new_password)
+        encrypt_pwd = des_encrypt(new_password)
         str_sql = 'update t_em set password=%s where code=%s'
         cur.execute(str_sql, args=[encrypt_pwd, code])
         str_msg = '%s的密码修改成功' % code
@@ -128,7 +128,7 @@ def reset_pwd(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select password from t_em where id=%s'
+        str_sql = 'select name from t_em where id=%s'
         cur.execute(str_sql, args=[opt_id])
         r = cur.fetchone()
         if r is None:
@@ -137,22 +137,27 @@ def reset_pwd(js):
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'select password from t_em where code=%s'
+        operator = r[0]
+        str_sql = 'select email from t_em where code=%s'
         cur.execute(str_sql, args=[code])
         r = cur.fetchone()
         if r is None:
-            str_msg = '用户%s不存在，无法修改密码' % code
+            str_msg = '用户%s不存在，无法重置密码' % code
             js_ret['err_msg'] = str_msg
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
             return js_ret
-        encrypt_pwd = des_encrypt(code + default_pwd)
+        email = r[0]
+        encrypt_pwd = des_encrypt(default_pwd)
         str_sql = 'update t_em set password=%s where code=%s'
         cur.execute(str_sql, args=[encrypt_pwd, code])
-        str_msg = '%s的密码重置成功' % code
+        str_msg = '%s的密码由%s重置成功' % (code, operator)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
+        subject = '%s的密码由%s重置成功' % (code, operator)
+        content = '重置后的密码为%s' % default_pwd
+        send_email(email, subject=subject, content=content)
         js_ret['err_msg'] = str_msg
         js_ret['result'] = True
         return js_ret
@@ -162,7 +167,9 @@ def reset_pwd(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'code': 'gj', 'password': '123', 'opt_id': 1}
+    js = {'tenant': 'tk_huawei', 'code': 'gj', 'opt_id': 1}
+    print(reset_pwd(js))
+    js = {'tenant': 'tk_huawei', 'code': 'gj', 'password': default_pwd, 'opt_id': 1}
     print(login(js))
 
 
