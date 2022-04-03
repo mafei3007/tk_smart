@@ -8,15 +8,17 @@
 @Desc   ：
 ==================================================
 """
-
+import binascii
 import json
+import re
 import socket
 import traceback
 import httplib2
 import os
 import time
+from pyDes import des, CBC, PAD_PKCS5
 from pathlib import Path
-from db.comm_cnn import CommonCnn
+from constant import des_secret_key
 
 
 def get_host():
@@ -39,47 +41,42 @@ def free_obj(obj):
         write_log(str_err)
 
 
-def deal_db_err(em, str_sql, args):
-    em_name = repr(em).split('(')[0]
-    if args:
-        err_msg = 'SQL:%s,参数%s,异常：%s，详细异常：%s' % (str_sql, str(args), em_name, traceback.format_exc())
-    else:
-        err_msg = 'SQL:%s,参数空,异常：%s，详细异常：%s' % (str_sql, em_name, traceback.format_exc())
-    write_log(err_msg)
-    return err_msg
+def des_encrypt(s):
+    iv = des_secret_key
+    k = des(des_secret_key, CBC, iv, pad=None, padmode=PAD_PKCS5)
+    en = k.encrypt(s, padmode=PAD_PKCS5)
+    by_hex = binascii.b2a_hex(en)
+    return bytes.decode(by_hex)
 
 
-def qry_common_sql(str_sql, args=None):
-    cnn = None
-    cur = None
-    try:
-        cnn = CommonCnn().cnn_pool.connection()
-        cur = cnn.cursor()
-        cur.execute(str_sql, args=args)
-        rr = cur.fetchall()
-        return rr, None
-    except Exception as em:
-        return None, deal_db_err(em, str_sql, args)
-    finally:
-        free_obj(cur)
-        cnn.close()
+def des_decrypt(s):
+    iv = des_secret_key
+    k = des(des_secret_key, CBC, iv, pad=None, padmode=PAD_PKCS5)
+    de = k.decrypt(binascii.a2b_hex(s), padmode=PAD_PKCS5)
+    return bytes.decode(de)
 
 
-def exec_common_sql(str_sql, args=None):
-    cnn = None
-    cur = None
-    try:
-        cnn = CommonCnn().cnn_pool.connection()
-        cur = cnn.cursor()
-        effected_rows = cur.execute(str_sql, args=args)
-        if effected_rows > 0:
-            cnn.commit()
-        return effected_rows, None
-    except Exception as em:
-        return -1, deal_db_err(em, str_sql, args)
-    finally:
-        free_obj(cur)
-        cnn.close()
+# 校验密码复杂度是否符合要求
+def check_pwd(pwd):
+    if pwd is None:
+        return '密码不能为空'
+    if len(pwd.strip()) == 0:
+        return '密码长度不能为空'
+    if len(pwd) < 9:
+        return '密码长度不能小于8'
+    pattern = re.compile('[0-9]+')
+    if not pattern.findall(pwd):
+        return '密码不能都是数字，必须包含数字，大小写字母'
+    pattern = re.compile('[A-Z]+')
+    if not pattern.findall(pwd):
+        return '密码必须包含大写字母，必须包含数字，大小写字母'
+    pattern = re.compile('[a-z]+')
+    if not pattern.findall(pwd):
+        return '密码必须包含小写字母，必须包含数字，大小写字母'
+    pattern = re.compile('^[a-z0-9A-Z]+')
+    if not pattern.findall(pwd):
+        return '密码必须要以数字或字母开头'
+    return None
 
 
 def send_message(url, method='GET', js_body=None, js_header=None):
@@ -118,34 +115,14 @@ def write_log(str_msg, tenant=None):
         print(str_err)
 
 
-def free_obj(obj):
-    if obj is None:
-        return
-    try:
-        obj.close()
-    except Exception as em:
-        str_err = '释放对象异常:%s' % repr(em).split('(')[0]
-        write_log(str_err)
-
-
 def main():
-    # str_sql = 'select * from t_city'
-    # t1 = time.time()
-    # for i in range(1, 10):
-    #     print(qry_common_sql(str_sql))
-    # print(time.time() - t1)
-    # s_sql = "insert into t_tenant (tenant_code, company, contact, phone, telephone, addr, " \
-    #         "email, reg_dt, reg_code) values('tk_huawei', '南京华为', '马飞', '13951623007', '025-8336666', " \
-    #         "'软件大道101号', 'huawei@huawei.com', '2022-03-21 09:44:17', null);"
-    # print(exec_sql(s_sql))
-    url = 'http://192.168.1.5:5005/login'
-    method = 'GET'
-    js_bd = {'user': '马飞', 'code': 'hero'}
-    js_hd = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
-    print(send_message(url, method=method, js_body=js_bd, js_header=js_hd))
-    # bc_content = 'this is a test message'
-    # print(get_bc_img(bc_content))
-    # print(get_express_info(''))
+    # url = 'http://192.168.1.5:5005/login'
+    # method = 'GET'
+    # js_bd = {'user': '马飞', 'code': 'hero'}
+    # js_hd = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
+    # print(send_message(url, method=method, js_body=js_bd, js_header=js_hd))
+    print(des_encrypt('gj123'))
+    print(des_decrypt('11a4627cd0dc9d2d'))
 
 
 if __name__ == '__main__':

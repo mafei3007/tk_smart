@@ -40,7 +40,7 @@ def get_em_role(js):
         return js_ret
     finally:
         free_obj(cur)
-        cnn.close()
+        #cnn.close()
 
 
 # 更新人员角色信息

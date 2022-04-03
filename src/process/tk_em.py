@@ -310,8 +310,8 @@ def del_em(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'id': 1, 'opt_id': 1}
-    print(del_em(js))
+    js = {'tenant': 'tk_huawei', 'opt_id': 1}
+    print(get_em_list(js))
 
 
 if __name__ == '__main__':
