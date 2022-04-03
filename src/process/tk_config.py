@@ -8,8 +8,8 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
+from tk_util import write_log, free_obj
+from db.comm_cnn import CommonCnn
 from constant import company_name, company_bank, company_account, company_credit_code, company_address
 
 
@@ -19,7 +19,7 @@ def get_idx(tenant, code):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select idx from t_sys where code=%s'
         cur.execute(str_sql, args=[code])
@@ -41,7 +41,7 @@ def get_config(tenant, k, def_v):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select v from t_config where k=%s'
         str_msg = 'SQL:%s,参数:%s' % (str_sql, k)
@@ -62,7 +62,7 @@ def set_config(tenant, k, v):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'delete from t_config where k=%s'
         cur.execute(str_sql, args=[k])
@@ -98,7 +98,7 @@ def get_company_ext(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select * from t_company'
         str_msg = '查询SQL:%s,参数:空' % str_sql
@@ -133,7 +133,7 @@ def add_ext(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_company where name=%s'
         cur.execute(str_sql, args=[name])
@@ -171,7 +171,7 @@ def edit_ext(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_company where name=%s and id=%s'
         cur.execute(str_sql, args=[name, ext_id])
@@ -212,7 +212,7 @@ def del_ext(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'delete from t_company where id=%s'
         cur.execute(str_sql, args=[ext_id])

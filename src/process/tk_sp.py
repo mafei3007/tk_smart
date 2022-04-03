@@ -8,8 +8,8 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
+from tk_util import write_log, free_obj
+from db.comm_cnn import CommonCnn
 
 
 # 查询人员列表信息
@@ -31,7 +31,7 @@ def get_sp_list(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_count = 'select count(*) from t_supp where status=%s'
@@ -102,7 +102,7 @@ def add_sp(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_sp where name=%s or code=%s'
         cur.execute(str_sql, args=[name, code])
@@ -151,7 +151,7 @@ def edit_sp(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_supp where id=%s'
         cur.execute(str_sql, args=[em_id])
@@ -230,7 +230,7 @@ def del_sp(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_supp where id=%s'
         cur.execute(str_sql, args=[sp_id])

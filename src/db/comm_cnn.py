@@ -19,7 +19,7 @@ class CommonCnn(object):
     _instance_lock = threading.Lock()
 
     def __init__(self):
-        self.cnn_pool = PooledDB(
+        self.base_cnn = PooledDB(
             # 使用链接数据库的模块
             creator=pymysql,
             # 连接池允许的最大连接数，0和None表示不限制连接数
@@ -43,15 +43,56 @@ class CommonCnn(object):
             # 字符编码
             charset=comm_db_charset
         )
+        self.cnn_pool = dict()
+        cnn = self.base_cnn.connection()
+        str_sql = 'select tenant_code,db_host,db_user,db_pwd,db_name,db_charset,status,max_cnn from t_tenant'
+        cur = cnn.cursor()
+        cur.execute(str_sql)
+        rr = cur.fetchall()
+        for r in rr:
+            tenant = r[0]
+            db_host = r[1]
+            db_user = r[2]
+            db_pwd = r[3]
+            db_name = r[4]
+            db_charset = r[5]
+            status = r[6]
+            max_cnn = r[7]
+            if status != '有效':
+                continue
+            self.cnn_pool[tenant] = PooledDB(
+                # 使用链接数据库的模块
+                creator=pymysql,
+                # 连接池允许的最大连接数，0和None表示不限制连接数
+                maxconnections=max_cnn,
+                # 初始化时，链接池中至少创建的空闲的链接，0表示不创建
+                mincached=1,
+                # 连接池中如果没有可用连接后，是否阻塞等待。True，等待；False，不等待然后报错
+                blocking=True,
+                # 一个链接最多被重复使用的次数，None表示无限制
+                maxusage=None,
+                # 主机地址
+                host=db_host,
+                # 端口
+                port=3306,
+                # 数据库用户名
+                user=db_user,
+                # 数据库密码
+                password=db_pwd,
+                # 数据库名
+                database=db_name,
+                # 字符编码
+                charset=db_charset
+            )
+        cur.close()
+        cnn.close()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(CommonCnn, "_instance"):
             with CommonCnn._instance_lock:
                 if not hasattr(CommonCnn, "_instance"):
-                    # 类加括号就回去执行__new__方法，__new__方法会创建一个类实例：CommonCnn()
-                    CommonCnn._instance = object.__new__(cls)  # 继承object类的__new__方法，类去调用方法，说明是函数，要手动传cls
-        return CommonCnn._instance  # obj1
-        # 类加括号就会先去执行__new__方法，在执行__init__方法
+                    CommonCnn._instance = object.__new__(cls)
+        return CommonCnn._instance
 
 
 def main():

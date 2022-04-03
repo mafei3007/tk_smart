@@ -8,8 +8,9 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
+
+from db.comm_cnn import CommonCnn
+from tk_util import write_log, free_obj
 from constant import default_pwd
 
 
@@ -34,7 +35,7 @@ def get_em_list(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_count = 'select count(*) from t_em where status=%s'
@@ -115,7 +116,7 @@ def add_em(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_em where name=%s or code=%s'
         cur.execute(str_sql, args=[name, code])
@@ -167,7 +168,7 @@ def edit_em(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_em where id=%s'
         cur.execute(str_sql, args=[em_id])
@@ -243,7 +244,7 @@ def del_em(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_em where id=%s'
         cur.execute(str_sql, args=[em_id])

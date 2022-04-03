@@ -118,6 +118,16 @@ def write_log(str_msg, tenant=None):
         print(str_err)
 
 
+def free_obj(obj):
+    if obj is None:
+        return
+    try:
+        obj.close()
+    except Exception as em:
+        str_err = '释放对象异常:%s' % repr(em).split('(')[0]
+        write_log(str_err)
+
+
 def main():
     # str_sql = 'select * from t_city'
     # t1 = time.time()

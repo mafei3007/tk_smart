@@ -8,8 +8,8 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
+from tk_util import write_log, free_obj
+from db.comm_cnn import CommonCnn
 from constant import comm_role
 
 
@@ -25,7 +25,7 @@ def get_role(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_sql = 'select * from t_role'
@@ -68,7 +68,7 @@ def add_role(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_role where name=%s'
         cur.execute(str_sql, args=[name])
@@ -105,7 +105,7 @@ def edit_role(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_role where id=%s and default=%s'
         cur.execute(str_sql, args=[rl_id, '系统'])
@@ -152,7 +152,7 @@ def del_role(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_role where id=%s and default=%s'
         cur.execute(str_sql, args=[rl_id, '系统'])

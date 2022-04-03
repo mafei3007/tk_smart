@@ -8,8 +8,8 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
+from tk_util import write_log, free_obj
+from db.comm_cnn import CommonCnn
 from constant import comm_unit_type
 
 
@@ -25,7 +25,7 @@ def get_unit(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_sql = 'select * from t_unit'
@@ -76,7 +76,7 @@ def add_unit(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         if basic_unit != u_code:  # 不是基础单位，那就需要判断该单位的基础单位是否存在
             str_sql = 'select count(*) from t_unit where u_code=%s'
@@ -127,7 +127,7 @@ def edit_unit(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_unit where u_code=%s'
         cur.execute(str_sql, args=[u_code])
@@ -178,7 +178,7 @@ def del_unit(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_unit where u_code=%s'
         cur.execute(str_sql, args=[u_code])

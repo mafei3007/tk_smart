@@ -8,8 +8,8 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
+from tk_util import write_log, free_obj
+from db.comm_cnn import CommonCnn
 
 
 # 查询人员角色信息
@@ -23,7 +23,7 @@ def get_em_role(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select a.id,a.name,a.remark from t_role as a,t_em_role as b where a.id=b.rl_id and b.em_id=%s'
         cur.execute(str_sql, args=[em_id])
@@ -54,7 +54,7 @@ def edit_unit(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select name from t_em where id=%s'
         cur.execute(str_sql, args=[em_id])

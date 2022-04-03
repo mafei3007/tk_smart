@@ -8,8 +8,8 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
+from tk_util import write_log, free_obj
+from db.comm_cnn import CommonCnn
 
 
 # 查询工艺列表信息
@@ -22,7 +22,7 @@ def get_ws_list(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_sql = 'select * from t_ws order by code asc'
@@ -56,7 +56,7 @@ def add_ws(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_ws where code=%s'
         cur.execute(str_sql, args=[code])
@@ -92,7 +92,7 @@ def edit_ws(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_ws where code=%s'
         cur.execute(str_sql, args=[code])
@@ -134,7 +134,7 @@ def del_ws(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select count(*) from t_ws where code=%s'
         cur.execute(str_sql, args=[code])

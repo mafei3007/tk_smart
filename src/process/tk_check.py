@@ -11,9 +11,9 @@ import datetime
 import threading
 import time
 
-from tk_util import write_log
-from process.srv_util import get_tenant_cnn, free_obj
-from src.process.tk_config import get_idx
+from tk_util import write_log, free_obj
+from process.tk_config import get_idx
+from db.comm_cnn import CommonCnn
 
 lock = threading.Lock()
 
@@ -49,7 +49,7 @@ def get_pc_paid_info(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_count = 'select count(b.id) from t_pc as a,t_pc_pay as b,t_em as c, t_supp as d,t_good as e ' \
@@ -124,7 +124,7 @@ def get_pc_checkin(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_count = 'select count(a.gd_id) from t_checkin as a,t_pc as b,t_em as c, t_stock as d, t_supp as e,' \
@@ -203,7 +203,7 @@ def get_pc(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
         str_count = 'select count(a.id) from t_pc as a,t_good as b,t_em as c,t_supp as d where a.gd_id=b.id and ' \
@@ -293,7 +293,7 @@ def add_pc(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select id from t_supp where id=%s'
         cur.execute(str_sql, args=[sp_id])
@@ -337,7 +337,7 @@ def approval_pc(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select status from t_pc where id=%s'
         cur.execute(str_sql, args=[pc_id])
@@ -390,7 +390,7 @@ def edit_pc(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select price,count,remark,status from t_pc where id=%s'
         cur.execute(str_sql, args=[pc_id])
@@ -436,7 +436,7 @@ def del_pc(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select status,name from t_pc where id=%s'
         cur.execute(str_sql, args=[pc_id])
@@ -482,7 +482,7 @@ def pay_pc(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select name,pay_status,price,count,paid_amount from t_pc where id=%s'
         cur.execute(str_sql, args=[pc_id])
@@ -537,7 +537,7 @@ def return_pc(js):
     cnn = None
     cur = None
     try:
-        cnn = get_tenant_cnn(tenant)
+        cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select name,rec_count,status from t_pc where id=%s'
         cur.execute(str_sql, args=[pc_id])
