@@ -98,7 +98,7 @@ def edit_role(js):
     rights = js.get('rights', None)
     remark = js.get('remark', None)
     if is_none([name, rights, remark]):
-        str_msg = '没有需要更新的信息' % rl_id
+        str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret

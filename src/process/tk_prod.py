@@ -18,12 +18,12 @@ from src.process.tk_config import get_idx
 lock = threading.Lock()
 
 
-def get_pc_name(tenant):
-    code = 'PC'
+def get_prod_plan_name(tenant):
+    code = 'PROD'
     lock.acquire()
     try:
         pc_name = code + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + '_%d' % get_idx(tenant, code)
-        str_msg = '获取订单名称%s' % pc_name
+        str_msg = '获取生产工单名称%s' % pc_name
         write_log(str_msg, tenant=tenant)
         return pc_name
     finally:
@@ -309,7 +309,7 @@ def add_pc(js):
             str_msg = '物料%d不存在' % gd_id
             js_ret['err_msg'] = str_msg
             return js_ret
-        pc_name = get_pc_name(tenant)
+        pc_name = get_prod_plan_name(tenant)
         str_sql = 'insert into t_pc(name,gd_id,em_id,sp_id,price,count,to_pay_amount,status,remark,pay_status) ' \
                   'values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql,

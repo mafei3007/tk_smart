@@ -8,13 +8,13 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj,is_none
 from db.comm_cnn import CommonCnn
 from constant import default_pwd
 
 
-# 查询人员列表信息
-def get_em_list(js):
+# 查询
+def get_prod_list(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1

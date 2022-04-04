@@ -12,7 +12,7 @@ from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
-# 查询工艺列表信息
+# 查询信息
 def get_ws_list(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -62,7 +62,7 @@ def add_ws(js):
         cur.execute(str_sql, args=[code])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '代号%s已经存在，不能重复添加' % code
+            str_msg = '工艺%s已经存在，不能重复添加' % code
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
@@ -86,10 +86,11 @@ def edit_ws(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    code = js['code']
+    ws_id = js['id']
+    code = js.get('code', None)
     status = js.get('status', None)
     remark = js.get('remark', None)
-    if is_none([status, remark]):
+    if is_none([code, status, remark]):
         str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
@@ -99,24 +100,36 @@ def edit_ws(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_ws where code=%s'
-        cur.execute(str_sql, args=[code])
+        str_sql = 'select count(*) from t_ws where id=%s'
+        cur.execute(str_sql, args=[ws_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '信息%s不存在，无法更新' % code
+            str_msg = '工艺%s不存在，无法更新' % code
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
+        if code:
+            str_sql = 'select count(*) from t_ws where id！=%s and code=%s'
+            cur.execute(str_sql, args=[ws_id, code])
+            r = cur.fetchone()
+            if r[0] > 0:
+                str_msg = '工艺%s重复，无法更新' % code
+                js_ret['err_msg'] = str_msg
+                write_log(str_msg, tenant=tenant)
+                return js_ret
         e_args = []
         str_tmp = ''
+        if code:
+            str_tmp = str_tmp + ',code=%s'
+            e_args.append(code)
         if status:
             str_tmp = str_tmp + ',status=%s'
             e_args.append(status)
         if remark:
             str_tmp = str_tmp + ',remark=%s'
             e_args.append(remark)
-        str_sql = 'update t_ws set ' + str_tmp[1:] + ' where code=%s'
-        e_args.append(code)
+        str_sql = 'update t_ws set ' + str_tmp[1:] + ' where id=%s'
+        e_args.append(ws_id)
         if len(e_args) > 1:
             cur.execute(str_sql, args=e_args)
         str_msg = '更新工艺信息%s' % code
@@ -137,29 +150,29 @@ def del_ws(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    code = js['code']
+    ws_id = js['id']
     force = js.get('force', False)
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_ws where code=%s'
-        cur.execute(str_sql, args=[code])
+        str_sql = 'select count(*) from t_ws where id=%s'
+        cur.execute(str_sql, args=[ws_id])
         r = cur.fetchone()
         if r[0] == 0:
-            str_msg = '%s不存在' % code
+            str_msg = '%s不存在' % ws_id
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
         if force:
-            str_sql = 'delete from t_ws where code=%s'
-            cur.execute(str_sql, args=[code])
+            str_sql = 'delete from t_ws where id=%s'
+            cur.execute(str_sql, args=[ws_id])
         else:
-            str_sql = 'update t_ws set status=%s where code=%s'
-            cur.execute(str_sql, args=['失效', code])
-        str_msg = '删除工艺信息%s' % code
+            str_sql = 'update t_ws set status=%s where id=%s'
+            cur.execute(str_sql, args=['失效', ws_id])
+        str_msg = '删除工艺信息%s' % ws_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
