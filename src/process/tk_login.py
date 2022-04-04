@@ -91,8 +91,7 @@ def change_pwd(js):
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
             return js_ret
-        db_encrypt_pwd = r[0]  # 11a4627cd0dc9d2d
-        if db_encrypt_pwd != encrypt_pwd:
+        if r[0] != encrypt_pwd:
             str_msg = '用户%s原密码鉴权失败，无法修改密码' % code
             str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
             cur.execute(str_sql, args=[opt_id, str_msg])
@@ -167,9 +166,9 @@ def reset_pwd(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'code': 'gj', 'opt_id': 1}
-    print(reset_pwd(js))
-    js = {'tenant': 'tk_huawei', 'code': 'gj', 'password': default_pwd, 'opt_id': 1}
+    # js = {'tenant': 'tk_huawei', 'code': 'gj', 'opt_id': 1}
+    # print(reset_pwd(js))
+    js = {'tenant': 'tk_huawei', 'code': 'supper', 'password': 'Fh@123.com', 'opt_id': 1}
     print(login(js))
 
 

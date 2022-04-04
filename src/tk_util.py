@@ -43,18 +43,18 @@ def free_obj(obj):
         write_log(str_err)
 
 
-def des_encrypt(s):
+def des_encrypt(str_input):
     iv = des_secret_key
     k = des(des_secret_key, CBC, iv, pad=None, padmode=PAD_PKCS5)
-    en = k.encrypt(s, padmode=PAD_PKCS5)
+    en = k.encrypt(str_input, padmode=PAD_PKCS5)
     by_hex = binascii.b2a_hex(en)
     return bytes.decode(by_hex)
 
 
-def des_decrypt(s):
+def des_decrypt(str_input):
     iv = des_secret_key
     k = des(des_secret_key, CBC, iv, pad=None, padmode=PAD_PKCS5)
-    de = k.decrypt(binascii.a2b_hex(s), padmode=PAD_PKCS5)
+    de = k.decrypt(binascii.a2b_hex(str_input), padmode=PAD_PKCS5)
     return bytes.decode(de)
 
 
@@ -147,7 +147,7 @@ def main():
     # js_hd = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
     # print(send_message(url, method=method, js_body=js_bd, js_header=js_hd))
     print(des_encrypt('gj12345'))
-    print(des_decrypt('25c0dbddf8be0d80'))
+    print(des_decrypt('21f6f4abe215bbf466c57fb50403ff42'))
     # send_email('mafeihong123@126.com', subject='邮件主题', content='This is a test memo.')
 
 

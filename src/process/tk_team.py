@@ -87,23 +87,24 @@ def edit_team(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    code = js['code']
+    tm_id = js['id']
+    code = js.get('code', None)
     status = js.get('status', None)
     remark = js.get('remark', '')
+    lst_em = js.get('em_list', None)
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_team where code=%s'
-        cur.execute(str_sql, args=[code])
+        str_sql = 'select count(*) from t_team where id=%s'
+        cur.execute(str_sql, args=[tm_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '信息%s不存在，无法更新' % code
+            str_msg = '信息%s不存在，无法更新' % tm_id
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-
         str_sql = 'update t_team set remark=%s'
         e_args = [remark]
         if status:
@@ -112,6 +113,12 @@ def edit_team(js):
         str_sql = str_sql + ' where code=%s'
         e_args.append(code)
         cur.execute(str_sql, args=e_args)
+        if lst_em:
+            str_sql = 'delete from t_em_team where tm_id=%s'
+            cur.execute(str_sql, args=[tm_id])
+            for em_id in lst_em:
+                str_sql = 'insert into t_em_team(tm_id,em_id) values(%s,%s)'
+                cur.execute(str_sql, args=[tm_id, em_id])
         str_msg = '更新小组信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
@@ -137,21 +144,24 @@ def del_team(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_team where code=%s'
+        str_sql = 'select id from t_team where code=%s'
         cur.execute(str_sql, args=[code])
         r = cur.fetchone()
-        if r[0] == 0:
+        if r is None:
             str_msg = '%s不存在' % code
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
+        tm_id = r[0]
         if force:
-            str_sql = 'delete from t_team where code=%s'
-            cur.execute(str_sql, args=[code])
+            str_sql = 'delete from t_team where id=%s'
+            cur.execute(str_sql, args=[tm_id])
         else:
-            str_sql = 'update t_team set status=%s where code=%s'
-            cur.execute(str_sql, args=['失效', code])
+            str_sql = 'update t_team set status=%s where id=%s'
+            cur.execute(str_sql, args=['失效', tm_id])
+        str_sql = 'delete from t_em_team where tm_id=%s'
+        cur.execute(str_sql, args=[tm_id])
         str_msg = '删除小组信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])

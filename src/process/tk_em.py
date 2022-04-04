@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj, des_encrypt
+from tk_util import write_log, free_obj, des_encrypt, check_pwd
 from db.comm_cnn import CommonCnn
 from constant import default_pwd
 
@@ -108,6 +108,12 @@ def add_em(js):
     status = js.get('status', '有效')
     remark = js.get('remark', '')
     lst_rl = js.get('role', [])
+    str_msg = check_pwd(password)
+    if str_msg:
+        js_ret['err_msg'] = str_msg
+        js_ret['result'] = False
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -160,7 +166,15 @@ def edit_em(js):
     addr = js.get('addr', None)
     status = js.get('status', None)
     remark = js.get('remark', '')
-    lst_rl = js.get('role', None)
+    lst_rl = js.get('role_list', None)
+    lst_tm = js.get('team_list', None)
+    if password:  # 如果试图修改密码，那就需要校验密码复杂度是否合规
+        str_msg = check_pwd(password)
+        if str_msg:
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     cnn = None
     cur = None
     try:
@@ -218,6 +232,12 @@ def edit_em(js):
             for rl_id in lst_rl:
                 str_sql = 'insert into t_em_role(em_id,rl_id) values(%s,%s)'
                 cur.execute(str_sql, args=[em_id, rl_id])
+        if lst_tm:
+            str_sql = 'delete from t_em_team where em_id=%s'
+            cur.execute(str_sql, args=[em_id])
+            for tm_id in lst_tm:
+                str_sql = 'insert into t_em_team(tm_id,em_id) values(%s,%s)'
+                cur.execute(str_sql, args=[tm_id, em_id])
         str_msg = '更新人员信息%s' % em_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
@@ -314,6 +334,10 @@ def del_em(js):
 def main():
     js = {'tenant': 'tk_huawei', 'opt_id': 1}
     print(get_em_list(js))
+    js = {'tenant': 'tk_huawei', 'opt_id': 1, 'name': '张三丰', 'code': 'supper', 'duty': '掌门',
+          'email': 'zhangsanfeng@wudang.com', 'phone': '13899998888', 'password': 'Fh@123.com', 'remark': '武当派创始人',
+          'addr': '武当山'}
+    print(add_em(js))
 
 
 if __name__ == '__main__':
