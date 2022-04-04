@@ -9,7 +9,7 @@
 """
 
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
@@ -92,7 +92,12 @@ def edit_ext(js):
     code = js.get('code', None)
     elastic = js.get('elastic', None)
     basic_unit = js.get('basic_unit', None)
-    remark = js.get('remark', '')
+    remark = js.get('remark', None)
+    if is_none([code, elastic, basic_unit, remark]):
+        str_msg = '没有需要更新的信息'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -115,18 +120,21 @@ def edit_ext(js):
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
-        str_sql = 'update t_ext set remark=%s'
-        e_args = [remark]
+        e_args = []
+        str_tmp = ''
         if code:
-            str_sql = str_sql + ',code=%s'
+            str_tmp = str_tmp + ',code=%s'
             e_args.append(code)
         if elastic:
-            str_sql = str_sql + ',elastic=%s'
+            str_tmp = str_tmp + ',elastic=%s'
             e_args.append(elastic)
         if basic_unit:
-            str_sql = str_sql + ',basic_unit=%s'
+            str_tmp = str_tmp + ',basic_unit=%s'
             e_args.append(basic_unit)
-        str_sql = str_sql + ' where id=%s'
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
+            e_args.append(remark)
+        str_sql = 'update t_ext set ' + str_tmp[1:] + ' where id=%s'
         e_args.append(ext_id)
         cur.execute(str_sql, args=e_args)
         str_msg = '更新扩展属性信息%s' % code

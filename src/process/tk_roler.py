@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 from constant import comm_role
 
@@ -94,9 +94,14 @@ def edit_role(js):
     js_ret['result'] = False
     tenant = js['tenant']
     rl_id = js['id']
-    name = js['name']
-    rights = js.get('rights', '')
-    remark = js.get('remark', '')
+    name = js.get('name', None)
+    rights = js.get('rights', None)
+    remark = js.get('remark', None)
+    if is_none([name, rights, remark]):
+        str_msg = '没有需要更新的信息' % rl_id
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     if name in comm_role:
@@ -123,15 +128,19 @@ def edit_role(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'update t_role set name=%s'
+        str_sql = 'name=%s'
         e_args = [name]
-        if rights != '':
-            str_sql = str_sql + ',rights=%s'
+        str_tmp = ''
+        if name:
+            str_tmp = str_tmp + ',name=%s'
+            e_args.append(name)
+        if rights:
+            str_tmp = str_tmp + ',rights=%s'
             e_args.append(rights)
-        if remark != '':
-            str_sql = str_sql + ',remark=%s'
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
             e_args.append(remark)
-        str_sql = str_sql + ' where id=%s'
+        str_sql = 'update t_role set ' + str_tmp[1:] + ' where id=%s'
         e_args.append(rl_id)
         cur.execute(str_sql, args=e_args)
         js_ret['result'] = True

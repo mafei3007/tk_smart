@@ -9,7 +9,7 @@
 """
 
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
@@ -90,8 +90,13 @@ def edit_team(js):
     tm_id = js['id']
     code = js.get('code', None)
     status = js.get('status', None)
-    remark = js.get('remark', '')
+    remark = js.get('remark', None)
     lst_em = js.get('em_list', None)
+    if is_none([code, status, remark, lst_em]):
+        str_msg = '没有需要更新的信息'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -105,14 +110,30 @@ def edit_team(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'update t_team set remark=%s'
-        e_args = [remark]
+        str_sql = 'select count(*) from t_team where id!=%s and code=%s'
+        cur.execute(str_sql, args=[tm_id, code])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '小组名称%s已经存在，无法更新' % tm_id
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+
+        e_args = []
+        str_tmp = ''
+        if code:
+            str_tmp = str_tmp + ',code=%s'
+            e_args.append(code)
         if status:
-            str_sql = str_sql + ',status=%s'
+            str_tmp = str_tmp + ',status=%s'
             e_args.append(status)
-        str_sql = str_sql + ' where code=%s'
-        e_args.append(code)
-        cur.execute(str_sql, args=e_args)
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
+            e_args.append(remark)
+        str_sql = 'update t_team set ' + str_tmp[1:] + ' where id=%s'
+        e_args.append(tm_id)
+        if len(e_args) > 1:
+            cur.execute(str_sql, args=e_args)
         if lst_em:
             str_sql = 'delete from t_em_team where tm_id=%s'
             cur.execute(str_sql, args=[tm_id])

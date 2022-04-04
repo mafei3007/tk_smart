@@ -158,6 +158,17 @@ def get_bc_img(bc_content):
     return img_file
 
 
+def is_none(lst_o):
+    if lst_o is None:
+        return True
+    if not isinstance(lst_o, list):
+        return True
+    for o in lst_o:
+        if o:
+            return False
+    return True
+
+
 def main():
     # url = 'http://192.168.1.5:5005/login'
     # method = 'GET'

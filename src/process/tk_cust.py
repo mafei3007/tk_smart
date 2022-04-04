@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
@@ -151,6 +151,11 @@ def edit_cust(js):
     email = js.get('email', None)
     status = js.get('status', None)
     remark = js.get('remark', '')
+    if is_none([name, code, bank, account, credit_code, address, contact, phone, email, status, remark]):
+        str_msg = '没有需要更新的信息' % cust_id
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -172,42 +177,45 @@ def edit_cust(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'update t_cust set remark=%s'
-        e_args = [remark]
+        e_args = []
+        str_tmp = ''
         if code:
-            str_sql = str_sql + ',code=%s'
+            str_tmp = str_tmp + ',code=%s'
             e_args.append(code)
         if name:
-            str_sql = str_sql + ',name=%s'
+            str_tmp = str_tmp + ',name=%s'
             e_args.append(name)
         if status:
-            str_sql = str_sql + ',status=%s'
+            str_tmp = str_tmp + ',status=%s'
             e_args.append(status)
         if bank:
-            str_sql = str_sql + ',bank=%s'
+            str_tmp = str_tmp + ',bank=%s'
             e_args.append(bank)
         if account:
-            str_sql = str_sql + ',account=%s'
+            str_tmp = str_tmp + ',account=%s'
             e_args.append(account)
         if credit_code:
-            str_sql = str_sql + ',credit_code=%s'
+            str_tmp = str_tmp + ',credit_code=%s'
             e_args.append(credit_code)
         if address:
-            str_sql = str_sql + ',address=%s'
+            str_tmp = str_tmp + ',address=%s'
             e_args.append(address)
         if contact:
-            str_sql = str_sql + ',contact=%s'
+            str_tmp = str_tmp + ',contact=%s'
             e_args.append(contact)
         if phone:
-            str_sql = str_sql + ',phone=%s'
+            str_tmp = str_tmp + ',phone=%s'
             e_args.append(phone)
         if email:
-            str_sql = str_sql + ',email=%s'
+            str_tmp = str_tmp + ',email=%s'
             e_args.append(email)
         if status:
-            str_sql = str_sql + ',status=%s'
+            str_tmp = str_tmp + ',status=%s'
             e_args.append(status)
-        str_sql = str_sql + ' where id=%s'
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
+            e_args.append(remark)
+        str_sql = 'update t_cust set ' + str_tmp[1:] + ' where id=%s'
         e_args.append(cust_id)
         cur.execute(str_sql, args=e_args)
         str_msg = '更新客户信息%s' % cust_id

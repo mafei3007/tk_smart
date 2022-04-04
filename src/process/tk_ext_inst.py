@@ -9,7 +9,7 @@
 """
 
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
@@ -140,7 +140,7 @@ def edit_ext_inst(js):
     ext_id = js.get('ext_id', None)
     value = js.get('value', None)
     remark = js.get('remark', None)
-    if ext_id is None or value is None or remark is None:
+    if is_none([ext_id, value, remark]):
         str_msg = '没有需要更新的信息' % ext_id
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)

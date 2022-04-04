@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 from constant import comm_unit_type
 
@@ -110,11 +110,16 @@ def edit_unit(js):
     js_ret['result'] = False
     tenant = js['tenant']
     u_code = js['u_code']
-    u_type = js.get('u_type', '')
-    conversion_rate = js.get('conversion_rate', 0)
-    basic_unit = js.get('basic_unit', '')
-    remark = js.get('remark', '')
-    if basic_unit == u_code and (conversion_rate != 0 and conversion_rate != 1):
+    u_type = js.get('u_type', None)
+    conversion_rate = js.get('conversion_rate', None)
+    basic_unit = js.get('basic_unit', None)
+    remark = js.get('remark', None)
+    if is_none([u_type, conversion_rate, basic_unit, remark]):
+        str_msg = '没有需要更新的信息'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
+    if basic_unit == u_code and (conversion_rate and conversion_rate != 1):
         str_msg = '%s为基础单位，但换算率不为1，无法编辑' % u_code
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
@@ -147,20 +152,25 @@ def edit_unit(js):
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
-        str_sql = 'update t_unit set remark=%s'
-        e_args = [remark]
-        if u_type != '':
-            str_sql = str_sql + ',u_type=%s'
+
+        e_args = []
+        str_tmp = ''
+        if u_type:
+            str_tmp = str_tmp + ',u_type=%s'
             e_args.append(u_type)
-        if basic_unit != '':
-            str_sql = str_sql + ',basic_unit=%s'
+        if basic_unit:
+            str_tmp = str_tmp + ',basic_unit=%s'
             e_args.append(basic_unit)
-        if conversion_rate != 0:
-            str_sql = str_sql + ',conversion_rate=%s'
+        if conversion_rate:
+            str_tmp = str_tmp + ',conversion_rate=%s'
             e_args.append(conversion_rate)
-        str_sql = str_sql + ' where u_code=%s'
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
+            e_args.append(remark)
+        str_sql = 'update t_unit set' + str_tmp[1:] + ' where u_code=%s'
         e_args.append(u_code)
-        cur.execute(str_sql, args=e_args)
+        if len(e_args) > 1:
+            cur.execute(str_sql, args=e_args)
         js_ret['result'] = True
         return js_ret
     finally:

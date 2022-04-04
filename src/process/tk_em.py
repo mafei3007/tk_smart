@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj, des_encrypt, check_pwd
+from tk_util import write_log, free_obj, des_encrypt, check_pwd, is_none
 from db.comm_cnn import CommonCnn
 from constant import default_pwd
 
@@ -168,6 +168,11 @@ def edit_em(js):
     remark = js.get('remark', '')
     lst_rl = js.get('role_list', None)
     lst_tm = js.get('team_list', None)
+    if is_none([name, code, duty, email, phone, password, addr, status, remark, lst_rl, lst_tm]):
+        str_msg = '没有需要更新的信息' % em_id
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     if password:  # 如果试图修改密码，那就需要校验密码复杂度是否合规
         str_msg = check_pwd(password)
         if str_msg:
@@ -196,36 +201,40 @@ def edit_em(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'update t_em set remark=%s'
-        e_args = [remark]
+        e_args = []
+        str_tmp = ''
         if code:
-            str_sql = str_sql + ',code=%s'
+            str_tmp = str_tmp + ',code=%s'
             e_args.append(code)
         if name:
-            str_sql = str_sql + ',name=%s'
+            str_tmp = str_tmp + ',name=%s'
             e_args.append(name)
         if duty:
-            str_sql = str_sql + ',duty=%s'
+            str_tmp = str_tmp + ',duty=%s'
             e_args.append(duty)
         if phone:
-            str_sql = str_sql + ',phone=%s'
+            str_tmp = str_tmp + ',phone=%s'
             e_args.append(phone)
         if email:
-            str_sql = str_sql + ',email=%s'
+            str_tmp = str_tmp + ',email=%s'
             e_args.append(email)
         if password:
             encrypt_pwd = des_encrypt(password)
-            str_sql = str_sql + ',password=%s'
+            str_tmp = str_tmp + ',password=%s'
             e_args.append(encrypt_pwd)
         if addr:
-            str_sql = str_sql + ',addr=%s'
+            str_tmp = str_tmp + ',addr=%s'
             e_args.append(addr)
         if status:
-            str_sql = str_sql + ',status=%s'
+            str_tmp = str_tmp + ',status=%s'
             e_args.append(status)
-        str_sql = str_sql + ' where id=%s'
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
+            e_args.append(remark)
+        str_sql = 'update t_em set ' + str_tmp[1:] + ' where id=%s'
         e_args.append(em_id)
-        cur.execute(str_sql, args=e_args)
+        if len(e_args) > 1:
+            cur.execute(str_sql, args=e_args)
         if lst_rl:
             str_sql = 'delete from t_em_role where em_id=%s'
             cur.execute(str_sql, args=[em_id])

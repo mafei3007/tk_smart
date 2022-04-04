@@ -40,11 +40,11 @@ def get_em_role(js):
         return js_ret
     finally:
         free_obj(cur)
-        #cnn.close()
+        cnn.close()
 
 
 # 更新人员角色信息
-def edit_unit(js):
+def edit_role(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False

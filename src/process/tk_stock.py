@@ -10,7 +10,7 @@
 import datetime
 import json
 
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
@@ -91,23 +91,31 @@ def edit_stock(js):
     js_ret['result'] = False
     tenant = js['tenant']
     stock_id = js['stock_id']
-    name = js.get('name', '')
-    is_default = js.get('is_default', -1)
-    remark = js.get('remark', '')
+    name = js.get('name', None)
+    is_default = js.get('is_default', None)
+    remark = js.get('remark', None)
+    if is_none([name, is_default, remark]):
+        str_msg = '没有需要更新的信息' % stock_id
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'update t_stock set remark=%s'
-        e_args = [remark]
-        if name != '':
-            str_sql = str_sql + ',name=%s'
+        e_args = []
+        str_tmp = ''
+        if name:
+            str_tmp = str_tmp + ',name=%s'
             e_args.append(name)
-        if is_default != -1:
-            str_sql = str_sql + ',is_default=%s'
+        if is_default:
+            str_tmp = str_tmp + ',is_default=%s'
             e_args.append(is_default)
-        str_sql = str_sql + ' where id=%s'
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
+            e_args.append(remark)
+        str_sql = 'update t_stock set' + str_tmp[1:] + ' where id=%s'
         e_args.append(stock_id)
         cur.execute(str_sql, args=e_args)
         js_ret['result'] = True

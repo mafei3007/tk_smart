@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj
+from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
@@ -88,7 +88,12 @@ def edit_ws(js):
     opt_id = js['opt_id']
     code = js['code']
     status = js.get('status', None)
-    remark = js.get('remark', '')
+    remark = js.get('remark', None)
+    if is_none([status, remark]):
+        str_msg = '没有需要更新的信息'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -102,15 +107,18 @@ def edit_ws(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-
-        str_sql = 'update t_ws set remark=%s'
-        e_args = [remark]
+        e_args = []
+        str_tmp = ''
         if status:
-            str_sql = str_sql + ',status=%s'
+            str_tmp = str_tmp + ',status=%s'
             e_args.append(status)
-        str_sql = str_sql + ' where code=%s'
+        if remark:
+            str_tmp = str_tmp + ',remark=%s'
+            e_args.append(remark)
+        str_sql = 'update t_ws set ' + str_tmp[1:] + ' where code=%s'
         e_args.append(code)
-        cur.execute(str_sql, args=e_args)
+        if len(e_args) > 1:
+            cur.execute(str_sql, args=e_args)
         str_msg = '更新工艺信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
