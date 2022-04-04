@@ -17,6 +17,7 @@ import httplib2
 import os
 import time
 import smtplib
+import qrcode
 from email.mime.text import MIMEText
 from pyDes import des, CBC, PAD_PKCS5
 from pathlib import Path
@@ -138,6 +139,23 @@ def write_log(str_msg, tenant=None):
     except Exception as em:
         str_err = '%s,详细异常:%s.' % (repr(em), traceback.format_exc())
         print(str_err)
+
+
+def get_bc_img(bc_content):
+    # version参数----二维码的格子矩阵大小，可以是1到40，1最小为21*21，40是177*177
+    # error_correction参数----二维码错误容许率，默认ERROR_CORRECT_M，容许小于15%的错误率
+    # box_size参数----二维码每个小格子包含的像素数量
+    # border参数----二维码到图片边框的小格子数，默认值为4
+    img_res = os.path.abspath(os.path.dirname(os.getcwd())) + os.sep + 'img_res'
+    if not Path(img_res).exists():
+        os.mkdir(img_res)
+    img_file = time.strftime('%Y%m%d%H%M%S_', time.localtime(time.time())) + str(uuid.uuid4()) + '.bmp'
+    img_file = img_res + os.sep + img_file
+    if os.path.exists(img_file):
+        os.remove(img_file)
+    img = qrcode.make(bc_content, version=4, box_size=20, border=2)
+    img.save(img_file)
+    return img_file
 
 
 def main():
