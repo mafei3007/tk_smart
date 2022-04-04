@@ -141,7 +141,7 @@ def edit_ext_inst(js):
     value = js.get('value', None)
     remark = js.get('remark', None)
     if is_none([ext_id, value, remark]):
-        str_msg = '没有需要更新的信息' % ext_id
+        str_msg = '没有需要更新扩展属性实例信息' % ext_id
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
