@@ -83,7 +83,7 @@ def add_ext(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     if is_not_none([ext_meta_id, value]):
-        str_msg = '元数据、值不能为空'
+        str_msg = '元数据、值不能为空.'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
