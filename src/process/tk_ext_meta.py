@@ -218,11 +218,6 @@ def del_ext_meta(js):
 def main():
     js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
     print(get_ext_meta_list(js))
-    code = js['code']
-    elastic = js.get('elastic', '否')
-    basic_unit = js.get('basic_unit', None)
-    status = js.get('status', '是')
-    remark = js.get('remark', '')
     js = {'tenant': 'tk_huawei', 'code': '测试元数据', 'elastic': '否', 'basic_unit': '米', 'status': '是', 'remark': '备注信息',
           'opt_id': 1}
     print(add_ext_meta(js))

@@ -128,7 +128,6 @@ def edit_role(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'name=%s'
         e_args = [name]
         str_tmp = ''
         if name:

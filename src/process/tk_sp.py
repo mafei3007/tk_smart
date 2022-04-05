@@ -160,7 +160,7 @@ def edit_sp(js):
             write_log(str_msg, tenant=tenant)
             return js_ret
     if is_none([name, code, contact, contact_phone, em_id, status, bank, account, credit_code, phone, address, remark]):
-        str_msg = '没有需要更新的信息' % sp_id
+        str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret

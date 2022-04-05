@@ -163,7 +163,7 @@ def edit_cust(js):
             write_log(str_msg, tenant=tenant)
             return js_ret
     if is_none([name, code, bank, account, credit_code, address, contact, phone, email, status, remark]):
-        str_msg = '没有需要更新的信息' % cust_id
+        str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret

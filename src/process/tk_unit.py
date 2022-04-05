@@ -8,7 +8,7 @@
 ==================================================
 """
 import datetime
-from tk_util import write_log, free_obj, is_none
+from tk_util import write_log, free_obj, is_none, is_not_none
 from db.comm_cnn import CommonCnn
 from constant import comm_unit_type
 
@@ -58,18 +58,23 @@ def add_unit(js):
     js_ret['err_msg'] = ''
     js_ret['result'] = False
     tenant = js['tenant']
-    basic_unit = js['basic_unit']
-    u_code = js['u_code']
-    u_type = js['u_type']
-    conversion_rate = js['conversion_rate']
+    u_code = js.get('u_code', None)
+    u_type = js.get('u_type', None)
+    basic_unit = js.get('basic_unit', None)
+    conversion_rate = js.get('remark', 1)
     remark = js.get('remark', '')
-    if basic_unit == u_code and conversion_rate != 1:
-        str_msg = '%s为基础单位，但换算率不为1，无法添加' % u_code
+    if is_not_none([u_code, u_type, basic_unit]):
+        str_msg = '单位代号/类型/基础单位不能为空' % u_code
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
-    if u_type not in comm_unit_type:
+    if u_type not in comm_unit_type:  # 单位类型必须合法
         str_msg = '%s类型不正确，只能是%s，无法添加' % (u_code, str(comm_unit_type))
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
+    if basic_unit == u_code and conversion_rate != 1:
+        str_msg = '%s为基础单位，但换算率不为1，无法添加' % u_code
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -89,7 +94,7 @@ def add_unit(js):
         str_sql = 'select count(*) from t_unit where u_code=%s'
         cur.execute(str_sql, args=[u_code])
         r = cur.fetchone()
-        if r[0] > 0:  # 该单位的基础单位不存在，报错
+        if r[0] > 0:
             str_msg = '%s已经存在，不能重复添加' % u_code
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)

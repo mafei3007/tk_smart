@@ -40,7 +40,6 @@ def get_gd_list(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        e_args = []
         str_count = 'select count(*) from t_good where 1=1'
         str_sql = 'select * from t_good where 1=1'
         e_args = []
@@ -351,8 +350,12 @@ def del_gd(js):
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'delete from t_good where id=%s'
-        cur.execute(str_sql, args=[gd_id])
+        if force:
+            str_sql = 'update t_good set status=%s where id=%s'
+            cur.execute(str_sql, args=['无效', gd_id])
+        else:
+            str_sql = 'delete from t_good where id=%s'
+            cur.execute(str_sql, args=[gd_id])
         str_msg = '删除物料%s' % gd_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])

@@ -174,7 +174,7 @@ def edit_em(js):
     lst_rl = js.get('role_list', None)
     lst_tm = js.get('team_list', None)
     if is_none([name, code, duty, email, phone, password, addr, status, remark, lst_rl, lst_tm]):
-        str_msg = '没有需要更新的信息' % em_id
+        str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret

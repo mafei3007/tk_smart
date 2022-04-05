@@ -22,7 +22,8 @@ def get_prod_plan_name(tenant):
     code = 'PROD'
     lock.acquire()
     try:
-        prod_plan_name = code + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + '_%d' % get_idx(tenant, code)
+        prod_plan_name = code + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + \
+                         '_%d' % get_idx(tenant, code)
         str_msg = '获取生产工单名称%s' % prod_plan_name
         write_log(str_msg, tenant=tenant)
         return prod_plan_name
