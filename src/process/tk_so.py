@@ -22,10 +22,10 @@ def get_so_plan_name(tenant):
     code = 'SO'
     lock.acquire()
     try:
-        pc_name = code + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + '_%d' % get_idx(tenant, code)
-        str_msg = '获取销售订单名称%s' % pc_name
+        so_plan_name = code + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + '_%d' % get_idx(tenant, code)
+        str_msg = '获取销售订单名称%s' % so_plan_name
         write_log(str_msg, tenant=tenant)
-        return pc_name
+        return so_plan_name
     finally:
         lock.release()
 

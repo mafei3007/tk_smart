@@ -295,7 +295,54 @@ def del_gd(js):
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_msg = '删除物料信息%s' % gd_id
+        str_sql = 'select count(*) from t_pc where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '%s被采购订单引用,无法删除,建议修改状态为失效' % gd_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = True
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_so_detail where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '%s被销售订单引用,无法删除,建议修改状态为失效' % gd_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_of_detail where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '%s被询价单引用,无法删除,建议修改状态为失效' % gd_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_checkin where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '%s存在入库记录,无法删除,建议修改状态为失效' % gd_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_checkout where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '%s存在出库记录,无法删除,建议修改状态为失效' % gd_id
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'delete from t_good where id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        str_msg = '删除物料%s' % gd_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
