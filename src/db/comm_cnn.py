@@ -108,11 +108,11 @@ def main():
     # 创建游标
     cursor = conn.cursor()
     # SQL语句
-    str_sql = 'select * from t_city'
-    cursor.execute(str_sql)
+    str_sql = 'select city_name from t_city where instr(city_name,%s)'
+    cursor.execute(str_sql, args=['山'])
     # 执行结果
     result = cursor.fetchall()
-    print(len(result))
+    print(result)
     # 将conn释放,放回连接池
     conn.close()
 
