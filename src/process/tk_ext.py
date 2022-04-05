@@ -75,8 +75,13 @@ def add_ext(js):
     opt_id = js['opt_id']
     ext_meta_id = js.get('ext_meta_id', None)
     value = js.get('value', None)
-    status = js.get('status', '是')
+    status = js.get('status', '有效')
     remark = js.get('remark', '')
+    if status not in ['有效', '无效']:
+        str_msg = '状态必须是\"有效\"或者\"无效\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     if is_not_none([ext_meta_id, value]):
         str_msg = '元数据、值不能为空'
         js_ret['err_msg'] = str_msg
@@ -134,6 +139,12 @@ def edit_ext(js):
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
+    if status:
+        if status not in ['有效', '无效']:
+            str_msg = '状态必须是\"有效\"或者\"无效\"'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     cnn = None
     cur = None
     try:

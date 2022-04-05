@@ -114,6 +114,11 @@ def add_em(js):
         js_ret['result'] = False
         write_log(str_msg, tenant=tenant)
         return js_ret
+    if status not in ['有效', '无效']:
+        str_msg = '状态必须是\"有效\"或者\"无效\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -178,6 +183,12 @@ def edit_em(js):
         if str_msg:
             js_ret['err_msg'] = str_msg
             js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+    if status:
+        if status not in ['有效', '无效']:
+            str_msg = '状态必须是\"有效\"或者\"无效\"'
+            js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
     cnn = None

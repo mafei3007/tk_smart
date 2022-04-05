@@ -99,6 +99,11 @@ def add_sp(js):
     phone = js.get('phone', '')
     address = js.get('address', '')
     remark = js.get('remark', '')
+    if status not in ['有效', '无效']:
+        str_msg = '状态必须是\"有效\"或者\"无效\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -148,6 +153,12 @@ def edit_sp(js):
     phone = js.get('phone', None)
     address = js.get('address', None)
     remark = js.get('remark', None)
+    if status:
+        if status not in ['有效', '无效']:
+            str_msg = '状态必须是\"有效\"或者\"无效\"'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     if is_none([name, code, contact, contact_phone, em_id, status, bank, account, credit_code, phone, address, remark]):
         str_msg = '没有需要更新的信息' % sp_id
         js_ret['err_msg'] = str_msg

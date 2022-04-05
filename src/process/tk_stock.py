@@ -60,8 +60,13 @@ def add_stock(js):
     js_ret['result'] = False
     tenant = js['tenant']
     name = js['name']
+    status = js.get('status', '有效')
     remark = js.get('remark', '')
-    is_default = js.get('is_default', 0)
+    if status not in ['有效', '无效']:
+        str_msg = '状态必须是\"有效\"或者\"无效\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -75,8 +80,8 @@ def add_stock(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'insert into t_stock(name,is_default,remark) values(%s,%s,%s)'
-        cur.execute(str_sql, args=[name, is_default, remark])
+        str_sql = 'insert into t_stock(name,status,remark) values(%s,%s,%s)'
+        cur.execute(str_sql, args=[name, status, remark])
         js_ret['result'] = True
         return js_ret
     finally:
@@ -92,13 +97,19 @@ def edit_stock(js):
     tenant = js['tenant']
     stock_id = js['stock_id']
     name = js.get('name', None)
-    is_default = js.get('is_default', None)
+    status = js.get('status', None)
     remark = js.get('remark', None)
-    if is_none([name, is_default, remark]):
-        str_msg = '没有需要更新的信息' % stock_id
+    if is_none([name, status, remark]):
+        str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
+    if status:
+        if status not in ['有效', '无效']:
+            str_msg = '状态必须是\"有效\"或者\"无效\"'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     cnn = None
     cur = None
     try:
@@ -109,9 +120,9 @@ def edit_stock(js):
         if name:
             str_tmp = str_tmp + ',name=%s'
             e_args.append(name)
-        if is_default:
-            str_tmp = str_tmp + ',is_default=%s'
-            e_args.append(is_default)
+        if status:
+            str_tmp = str_tmp + ',status=%s'
+            e_args.append(status)
         if remark:
             str_tmp = str_tmp + ',remark=%s'
             e_args.append(remark)

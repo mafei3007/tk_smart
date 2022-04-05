@@ -133,6 +133,11 @@ def add_gd(js):
     def_stock_id = js.get('def_stock_id', 0)
     wp = js.get('wp', 0)
     remark = js.get('remark', '')
+    if status not in ['有效', '无效']:
+        str_msg = '状态必须是\"有效\"或者\"无效\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     if is_not_none([name, category, code, gb, u_code]):
         str_msg = '名称、类别、代号、规格、单位不能为空' % code
         js_ret['err_msg'] = str_msg
@@ -193,6 +198,12 @@ def edit_gd(js):
     def_stock_id = js.get('def_stock_id', None)
     wp = js.get('wp', None)
     remark = js.get('remark', None)
+    if status:
+        if status not in ['有效', '无效']:
+            str_msg = '状态必须是\"有效\"或者\"无效\"'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     # name,category,code,gb,u_code,alarm,status,valid_days,def_stock_id,wp,remark
     if is_none([name, category, code, gb, u_code, alarm, status, valid_days, def_stock_id, wp, remark]):
         str_msg = '没有需要更新的信息'

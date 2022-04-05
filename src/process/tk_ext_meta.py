@@ -45,7 +45,7 @@ def get_ext_meta_list(js):
 
 
 # 添加
-def add_ext(js):
+def add_ext_meta(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False
@@ -54,8 +54,18 @@ def add_ext(js):
     code = js['code']
     elastic = js.get('elastic', '否')
     basic_unit = js.get('basic_unit', None)
-    status = js.get('status', '是')
+    status = js.get('status', '有效')
     remark = js.get('remark', '')
+    if status not in ['有效', '无效']:
+        str_msg = '状态必须是\"有效\"或者\"无效\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
+    if elastic not in ['是', '否']:
+        str_msg = '是否弹性必须是\"是\"或者\"否\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -100,6 +110,12 @@ def edit_ext_meta(js):
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
+    if status:
+        if status not in ['有效', '无效']:
+            str_msg = '状态必须是\"有效\"或者\"无效\"'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     cnn = None
     cur = None
     try:
@@ -154,7 +170,7 @@ def edit_ext_meta(js):
 
 
 # 删除
-def del_ext(js):
+def del_ext_meta(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False
@@ -201,7 +217,17 @@ def del_ext(js):
 
 def main():
     js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
-    print(del_ext(js))
+    print(get_ext_meta_list(js))
+    code = js['code']
+    elastic = js.get('elastic', '否')
+    basic_unit = js.get('basic_unit', None)
+    status = js.get('status', '是')
+    remark = js.get('remark', '')
+    js = {'tenant': 'tk_huawei', 'code': '测试元数据', 'elastic': '否', 'basic_unit': '米', 'status': '是', 'remark': '备注信息',
+          'opt_id': 1}
+    print(add_ext_meta(js))
+    # js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
+    # print(del_ext_meta(js))
 
 
 if __name__ == '__main__':

@@ -103,6 +103,11 @@ def add_cust(js):
     email = js.get('email', '')
     status = js.get('status', '有效')
     remark = js.get('remark', '')
+    if status not in ['有效', '无效']:
+        str_msg = '状态必须是\"有效\"或者\"无效\"'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
@@ -151,6 +156,12 @@ def edit_cust(js):
     email = js.get('email', None)
     status = js.get('status', None)
     remark = js.get('remark', '')
+    if status:
+        if status not in ['有效', '无效']:
+            str_msg = '状态必须是\"有效\"或者\"无效\"'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     if is_none([name, code, bank, account, credit_code, address, contact, phone, email, status, remark]):
         str_msg = '没有需要更新的信息' % cust_id
         js_ret['err_msg'] = str_msg
