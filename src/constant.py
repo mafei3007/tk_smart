@@ -29,11 +29,13 @@ company_credit_code = 'company_credit_code'
 
 company_address = 'company_address'
 
-pc_idx = 'pc_idx'  # 采购订单编号前缀
+pc_idx = 'PC'  # 采购订单编号前缀
 
-so_idx = 'so_idx'  # 销售订单编号前缀
+so_idx = 'SO'  # 销售订单编号前缀
 
-prod_idx = 'prod_idx'  # 生产工单名称前缀
+prod_idx = 'PROD'  # 生产工单名称前缀
+
+of_idx = 'OF'  # 询价单名称前缀
 
 account_delay_day = 'account_delay_day'  # 账期宽限天数
 

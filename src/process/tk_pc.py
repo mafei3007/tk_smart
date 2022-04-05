@@ -13,16 +13,16 @@ import time
 
 from tk_util import write_log, free_obj
 from db.comm_cnn import CommonCnn
-from src.process.tk_config import get_idx
+from process.tk_config import get_idx
+from constant import pc_idx
 
 lock = threading.Lock()
 
 
 def get_pc_plan_name(tenant):
-    code = 'PC'
     lock.acquire()
     try:
-        pc_name = code + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + '_%d' % get_idx(tenant, code)
+        pc_name = pc_idx + '_' + time.strftime('%Y%m%d', time.localtime(time.time())) + '_%d' % get_idx(tenant, pc_idx)
         str_msg = '获取订单名称%s' % pc_name
         write_log(str_msg, tenant=tenant)
         return pc_name
