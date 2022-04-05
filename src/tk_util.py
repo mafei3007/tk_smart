@@ -13,6 +13,8 @@ import json
 import re
 import socket
 import traceback
+import uuid
+
 import httplib2
 import os
 import time
@@ -21,7 +23,7 @@ import qrcode
 from email.mime.text import MIMEText
 from pyDes import des, CBC, PAD_PKCS5
 from pathlib import Path
-from constant import des_secret_key, from_email, from_email_pwd
+from constant import des_secret_key, from_email, from_email_pwd, default_pwd
 
 
 def get_host():
@@ -67,15 +69,23 @@ def check_pwd(pwd):
         return '密码长度不能为空'
     if len(pwd) < 9:
         return '密码长度不能小于8'
+    if pwd.lower() == default_pwd.lower():
+        return '不能使用默认密码'
     pattern = re.compile('[0-9]+')
     if not pattern.findall(pwd):
-        return '密码不能都是数字，必须包含数字，大小写字母'
+        return '密码不能都是数字'
+    pattern = re.compile('[A-Za-z]')
+    if not pattern.findall(pwd):
+        return '密码不能都是字母'
+    pattern = re.compile(r'\d')
+    if not pattern.findall(pwd):
+        return '密码必须要包含至少一个数字'
     pattern = re.compile('[A-Z]+')
     if not pattern.findall(pwd):
-        return '密码必须包含大写字母，必须包含数字，大小写字母'
+        return '密码必须包含至少一个大写字母'
     pattern = re.compile('[a-z]+')
     if not pattern.findall(pwd):
-        return '密码必须包含小写字母，必须包含数字，大小写字母'
+        return '密码必须包含至少一个小写字母'
     pattern = re.compile('^[a-z0-9A-Z]+')
     if not pattern.findall(pwd):
         return '密码必须要以数字或字母开头'
@@ -186,9 +196,13 @@ def main():
     # js_bd = {'user': '马飞', 'code': 'hero'}
     # js_hd = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
     # print(send_message(url, method=method, js_body=js_bd, js_header=js_hd))
-    print(des_encrypt('gj12345'))
-    print(des_decrypt('21f6f4abe215bbf466c57fb50403ff42'))
+    # print(des_encrypt('gj12345'))
+    # print(des_decrypt('21f6f4abe215bbf466c57fb50403ff42'))
     # send_email('mafeihong123@126.com', subject='邮件主题', content='This is a test memo.')
+    pwd = 'te1st'
+    pattern = re.compile(r'\d')
+    if not pattern.findall(pwd):
+        print('密码必须要包含至少一个数字')
 
 
 if __name__ == '__main__':

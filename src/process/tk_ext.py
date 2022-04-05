@@ -3,13 +3,14 @@
 =================================================
 @Project ：tk_smart
 @Author ：Ma fei
-@Date   ：2022-04-04 12:54
-@Desc   ：物料扩展属性管理
+@Date   ：2022-04-04 13:12
+@Desc   ：扩展属性实例明细管理
+首次提交，暂未测试
 ==================================================
 """
 
 import datetime
-from tk_util import write_log, free_obj, is_none
+from tk_util import write_log, free_obj, is_none, is_not_none
 from db.comm_cnn import CommonCnn
 
 
@@ -20,16 +21,37 @@ def get_ext_list(js):
     js_ret['len'] = -1
     js_ret['data'] = list()
     tenant = js['tenant']
+    ext_meta_id = js.get('ext_meta_id', None)
+    page_no = js.get('page_no', 0)
+    page_size = js.get('page_size', 0)
+    order_field = js.get('order_field', 'id')
+    order = js.get('order', 'asc')
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_sql = 'select * from t_ext order by code asc'
+        str_count = 'select count(a.id) from t_ext as a,t_ext_meta as b where a.ext_meta_id=b.id'
+        str_sql = 'select a.id,a.value,a.remark,b.id as ext_meta_id, b.code as ext_code from t_ext as a,' \
+                  't_ext_meta as b where a.ext_meta_id=b.id'
+        if ext_meta_id:
+            str_sql = str_sql + ' and b.id=%s'
+            str_count = str_count + ' and b.id=%s'
+            qry_args.append(ext_meta_id)
+        cur.execute(str_count, args=qry_args)
+        r = cur.fetchone()
+        js_ret['len'] = r[0]
+        str_sql = str_sql + ' order by ' + order_field + ' ' + order
+        if page_no > 0 and page_size > 0:  # 如果分页
+            str_sql = str_sql + ' limit ' + str((page_no - 1) * page_size) + ',' + str(page_size)
+        if qry_args:
+            str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
+        else:
+            str_msg = '查询SQL:%s,参数:空' % str_sql
+        write_log(str_msg, tenant=tenant)
         cur.execute(str_sql, args=qry_args)
         rr = cur.fetchall()
-        js_ret['len'] = len(rr)
         for r in rr:
             lst_r = list()
             for o in r:
@@ -51,26 +73,40 @@ def add_ext(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    code = js['code']
-    elastic = js.get('elastic', '否')
-    basic_unit = js.get('basic_unit', None)
+    ext_meta_id = js.get('ext_meta_id', None)
+    value = js.get('value', None)
+    status = js.get('status', '是')
     remark = js.get('remark', '')
+    if is_not_none([ext_meta_id, value]):
+        str_msg = '元数据、值不能为空'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_ext where code=%s'
-        cur.execute(str_sql, args=[code])
+        str_sql = 'select code from t_ext_meta where id=%s and status=%s'
+        cur.execute(str_sql, args=[ext_meta_id, '有效'])
         r = cur.fetchone()
-        if r[0] > 0:
-            str_msg = '%s已经存在，不能重复添加' % code
+        if r is None:
+            str_msg = '不存在有效的元数据%s，无法新增扩展属性' % ext_meta_id
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'insert into t_ext(code,elastic,basic_unit,remark) values(%s,%s,%s,%s)'
-        cur.execute(str_sql, args=[code, elastic, basic_unit, remark])
-        str_msg = '添加扩展属性%s' % code
+        ext_code = r[0]
+        str_sql = 'select count(*) from t_ext where ext_meta_id=%s and value=%s'
+        cur.execute(str_sql, args=[ext_meta_id, value])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '元数据%s，值%s的属性已经存在，不能重复添加' % (ext_code, value)
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'insert into t_ext(ext_meta_id,value,status,remark) values(%s,%s,%s,%s)'
+        cur.execute(str_sql, args=[ext_meta_id, value, status, remark])
+        str_msg = '创建元数据%s，值%s的扩展属性' % (ext_code, value)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -89,12 +125,12 @@ def edit_ext(js):
     tenant = js['tenant']
     opt_id = js['opt_id']
     ext_id = js['id']
-    code = js.get('code', None)
-    elastic = js.get('elastic', None)
-    basic_unit = js.get('basic_unit', None)
+    ext_meta_id = js.get('ext_meta_id', None)
+    value = js.get('value', None)
+    status = js.get('status', None)
     remark = js.get('remark', None)
-    if is_none([code, elastic, basic_unit, remark]):
-        str_msg = '没有需要更新的信息'
+    if is_none([ext_meta_id, value, status, remark]):
+        str_msg = '没有需要更新扩展属性'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -111,33 +147,33 @@ def edit_ext(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        if code:
-            str_sql = 'select count(*) from t_ext where id!=%s and code=%s'
-            cur.execute(str_sql, args=[ext_id, code])
+        if ext_meta_id:
+            str_sql = 'select count(*) from t_ext_meta where id=%s'
+            cur.execute(str_sql, args=[ext_meta_id])
             r = cur.fetchone()
             if r[0] > 0:
-                str_msg = '扩展属性代号%s不能重复，无法更新' % code
+                str_msg = '元数据%s不存在，无法更新' % ext_meta_id
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
+        str_sql = 'update t_ext set '
         e_args = []
-        str_tmp = ''
-        if code:
-            str_tmp = str_tmp + ',code=%s'
-            e_args.append(code)
-        if elastic:
-            str_tmp = str_tmp + ',elastic=%s'
-            e_args.append(elastic)
-        if basic_unit:
-            str_tmp = str_tmp + ',basic_unit=%s'
-            e_args.append(basic_unit)
+        if ext_meta_id:
+            str_sql = str_sql + ',ext_meta_id=%s'
+            e_args.append(ext_meta_id)
+        if value:
+            str_sql = str_sql + ',value=%s'
+            e_args.append(value)
+        if status:
+            str_sql = str_sql + ',status=%s'
+            e_args.append(status)
         if remark:
-            str_tmp = str_tmp + ',remark=%s'
+            str_sql = str_sql + ',remark=%s'
             e_args.append(remark)
-        str_sql = 'update t_ext set ' + str_tmp[1:] + ' where id=%s'
+        str_sql = str_sql + ' where id=%s'
         e_args.append(ext_id)
         cur.execute(str_sql, args=e_args)
-        str_msg = '更新扩展属性信息%s' % code
+        str_msg = '更新扩展属性%s成功' % ext_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -155,33 +191,35 @@ def del_ext(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    ext_id = js['id']
+    ext_inst_id = js['id']
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_sql = 'select id from t_ext where id=%s'
-        cur.execute(str_sql, args=[ext_id])
+        cur.execute(str_sql, args=[ext_inst_id])
         r = cur.fetchone()
         if r is None:
-            str_msg = '%s不存在,删除失败' % ext_id
+            str_msg = '%s不存在,删除失败' % ext_inst_id
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'select count(*) from t_ext_detail where ext_id=%s'
-        cur.execute(str_sql, args=[ext_id])
+        str_sql = 'select count(*) from t_ext where ext_inst_id=%s'
+        cur.execute(str_sql, args=[ext_inst_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '%s被工序引用了，无法删除' % ext_id
+            str_msg = '%s被物料引用了，无法删除，自动修改其状态为失效' % ext_inst_id
             js_ret['err_msg'] = str_msg
-            js_ret['result'] = False
+            js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
+            str_sql = 'update t_ext set status=%s where id=%s'
+            cur.execute(str_sql, args=['失效', ext_inst_id])
             return js_ret
         str_sql = 'delete from t_ext where id=%s'
-        cur.execute(str_sql, args=[ext_id])
-        str_msg = '删除工艺信息%s' % ext_id
+        cur.execute(str_sql, args=[ext_inst_id])
+        str_msg = '删除扩展属性信息%s成功' % ext_inst_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)

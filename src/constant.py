@@ -44,7 +44,7 @@ free_maintenance_year = 'free_maintenance_year'  # 免费维保年限
 maintenance_year = 'maintenance_year'  # 维保年限
 
 # 默认密码
-default_pwd = 'Admin123'
+default_pwd = 'Admin123'  # 必须要符合复杂度要求：字母或数字开头，必须包含至少数字和大小写字母，不能是纯数字或纯字母，且长度不小于8
 
 # 密码加解密 密钥
 des_secret_key = '12345678'
