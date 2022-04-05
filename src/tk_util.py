@@ -169,6 +169,17 @@ def is_none(lst_o):
     return True
 
 
+def is_not_none(lst_o):
+    if lst_o is None:
+        return False
+    if not isinstance(lst_o, list):
+        return True
+    for o in lst_o:
+        if o is None:
+            return False
+    return True
+
+
 def main():
     # url = 'http://192.168.1.5:5005/login'
     # method = 'GET'
