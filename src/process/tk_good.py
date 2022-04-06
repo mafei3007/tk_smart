@@ -128,8 +128,8 @@ def add_gd(js):
     alarm = js.get('alarm', 9999)
     status = js.get('status', '有效')
     valid_days = js.get('valid_days', 3650)
-    stock_id = js.get('stock_id', 0)
-    wp = js.get('wp', 0)
+    stock_id = js.get('stock_id', None)
+    wp = js.get('wp', None)
     remark = js.get('remark', '')
     if status not in ['有效', '无效']:
         str_msg = '状态必须是\"有效\"或者\"无效\"'
@@ -167,6 +167,40 @@ def add_gd(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
+        if stock_id:
+            str_sql = 'select count(*) from t_stock where id=%s'
+            cur.execute(str_sql, args=[stock_id])
+            r = cur.fetchone()
+            if r[0] == 0:
+                str_msg = '无效的仓库信息%s' % stock_id
+                js_ret['err_msg'] = str_msg
+                write_log(str_msg, tenant=tenant)
+                return js_ret
+        else:
+            str_sql = 'select id from t_stock order by id asc limit 1'
+            cur.execute(str_sql, args=[stock_id])
+            r = cur.fetchone()
+            if r:
+                stock_id = r[0]
+            else:
+                stock_id = 0
+        if wp:
+            str_sql = 'select count(*) from t_wp where id=%s'
+            cur.execute(str_sql, args=[wp])
+            r = cur.fetchone()
+            if r[0] == 0:
+                str_msg = '无效的工序信息%s' % wp
+                js_ret['err_msg'] = str_msg
+                write_log(str_msg, tenant=tenant)
+                return js_ret
+        else:
+            str_sql = 'select id from t_wp order by id asc limit 1'
+            cur.execute(str_sql, args=[wp])
+            r = cur.fetchone()
+            if r:
+                wp = r[0]
+            else:
+                wp = 0
         str_sql = 'insert into t_good(name,category,code,gb,u_code,alarm,status,valid_days,stock_id,wp,' \
                   'remark) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql,
@@ -234,6 +268,24 @@ def edit_gd(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
+        if stock_id:
+            str_sql = 'select count(*) from t_stock where id=%s'
+            cur.execute(str_sql, args=[stock_id])
+            r = cur.fetchone()
+            if r[0] == 0:
+                str_msg = '无效的仓库信息%s' % stock_id
+                js_ret['err_msg'] = str_msg
+                write_log(str_msg, tenant=tenant)
+                return js_ret
+        if wp:
+            str_sql = 'select count(*) from t_wp where id=%s'
+            cur.execute(str_sql, args=[wp])
+            r = cur.fetchone()
+            if r[0] == 0:
+                str_msg = '无效的工序信息%s' % wp
+                js_ret['err_msg'] = str_msg
+                write_log(str_msg, tenant=tenant)
+                return js_ret
         e_args = []
         str_tmp = ''
         if name:
