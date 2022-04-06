@@ -27,14 +27,13 @@ def get_gd_list(js):
     status = js.get('status', None)
     u_code = js.get('u_code', None)
     valid_days = js.get('valid_days', None)
-    def_stock_id = js.get('def_stock_id', None)
+    stock_id = js.get('stock_id', None)
     wp = js.get('wp', None)
     remark = js.get('remark', None)
     page_no = js.get('page_no', 0)
     page_size = js.get('page_size', 0)
     order_field = js.get('order_field', 'id')
     order = js.get('order', 'asc')
-
     cnn = None
     cur = None
     try:
@@ -75,10 +74,10 @@ def get_gd_list(js):
             str_sql = str_sql + ' and valid_days=%s'
             str_count = str_count + ' and valid_days=%s'
             e_args.append(valid_days)
-        if def_stock_id:
-            str_sql = str_sql + ' and def_stock_id=%s'
-            str_count = str_count + ' and def_stock_id=%s'
-            e_args.append(def_stock_id)
+        if stock_id:
+            str_sql = str_sql + ' and stock_id=%s'
+            str_count = str_count + ' and stock_id=%s'
+            e_args.append(stock_id)
         if wp:
             str_sql = str_sql + ' and wp=%s'
             str_count = str_count + ' and wp=%s'
@@ -129,7 +128,7 @@ def add_gd(js):
     alarm = js.get('alarm', 9999)
     status = js.get('status', '有效')
     valid_days = js.get('valid_days', 3650)
-    def_stock_id = js.get('def_stock_id', 0)
+    stock_id = js.get('stock_id', 0)
     wp = js.get('wp', 0)
     remark = js.get('remark', '')
     if status not in ['有效', '无效']:
@@ -138,7 +137,12 @@ def add_gd(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     if is_not_none([name, category, code, gb, u_code]):
-        str_msg = '名称、类别、代号、规格、单位不能为空' % code
+        str_msg = '名称、类别、代号、规格、单位不能为空'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
+    if category not in ['产品', '原料']:
+        str_msg = '物料类别%s不正确，必须是\"产品\"或\"原料\"' % category
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -163,10 +167,10 @@ def add_gd(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'insert into t_good(name,category,code,gb,u_code,alarm,status,valid_days,def_stock_id,wp,' \
+        str_sql = 'insert into t_good(name,category,code,gb,u_code,alarm,status,valid_days,stock_id,wp,' \
                   'remark) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql,
-                    args=[name, category, code, gb, u_code, alarm, status, valid_days, def_stock_id, wp, remark])
+                    args=[name, category, code, gb, u_code, alarm, status, valid_days, stock_id, wp, remark])
         str_msg = '物料名称%s、类别%s、代号%s、规格%s、单位%s添加成功' % (name, category, code, gb, u_code)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
@@ -194,7 +198,7 @@ def edit_gd(js):
     alarm = js.get('alarm', None)
     status = js.get('status', None)
     valid_days = js.get('valid_days', None)
-    def_stock_id = js.get('def_stock_id', None)
+    stock_id = js.get('stock_id', None)
     wp = js.get('wp', None)
     remark = js.get('remark', None)
     if status:
@@ -203,8 +207,7 @@ def edit_gd(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-    # name,category,code,gb,u_code,alarm,status,valid_days,def_stock_id,wp,remark
-    if is_none([name, category, code, gb, u_code, alarm, status, valid_days, def_stock_id, wp, remark]):
+    if is_none([name, category, code, gb, u_code, alarm, status, valid_days, stock_id, wp, remark]):
         str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
@@ -233,7 +236,6 @@ def edit_gd(js):
             return js_ret
         e_args = []
         str_tmp = ''
-        # name, category, code, gb, u_code, alarm, status, valid_days, def_stock_id, wp, remark
         if name:
             str_tmp = str_tmp + ',name=%s'
             e_args.append(name)
@@ -258,9 +260,9 @@ def edit_gd(js):
         if valid_days:
             str_tmp = str_tmp + ',valid_days=%s'
             e_args.append(valid_days)
-        if def_stock_id:
-            str_tmp = str_tmp + ',def_stock_id=%s'
-            e_args.append(def_stock_id)
+        if stock_id:
+            str_tmp = str_tmp + ',stock_id=%s'
+            e_args.append(stock_id)
         if wp:
             str_tmp = str_tmp + ',wp=%s'
             e_args.append(wp)

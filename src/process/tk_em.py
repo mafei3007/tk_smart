@@ -283,20 +283,30 @@ def del_em(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_em where id=%s'
+        str_sql = 'select name from t_em where id=%s'
         cur.execute(str_sql, args=[em_id])
         r = cur.fetchone()
-        if r[0] == 0:
+        if r is None:
             str_msg = '%s不存在' % em_id
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
+        em_name = r[0]
         str_sql = 'select count(*) from t_so where em_id=%s'
         cur.execute(str_sql, args=[em_id])
         r = cur.fetchone()
-        if r[0] == 0:
-            str_msg = '%s人员存在销售订单信息，不能删除，建议修改状态为 失效' % em_id
+        if r[0] > 0:
+            str_msg = '%s存在销售订单信息，不能删除，建议修改状态为\"失效\"' % em_name
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_of where em_id=%s'
+        cur.execute(str_sql, args=[em_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '%s存在询价单信息，不能删除，建议修改状态为\"失效\"' % em_name
             js_ret['err_msg'] = str_msg
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
@@ -304,8 +314,8 @@ def del_em(js):
         str_sql = 'select count(*) from t_pc where em_id=%s'
         cur.execute(str_sql, args=[em_id])
         r = cur.fetchone()
-        if r[0] == 0:
-            str_msg = '%s人员存在采购订单信息，不能删除，建议修改状态为 失效' % em_id
+        if r[0] > 0:
+            str_msg = '%s存在采购订单信息，不能删除，建议修改状态为\"失效\"' % em_name
             js_ret['err_msg'] = str_msg
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
@@ -313,8 +323,8 @@ def del_em(js):
         str_sql = 'select count(*) from t_checkin where em_id=%s'
         cur.execute(str_sql, args=[em_id])
         r = cur.fetchone()
-        if r[0] == 0:
-            str_msg = '%s人员存在入库信息，不能删除，建议修改状态为 失效' % em_id
+        if r[0] > 0:
+            str_msg = '%s存在入库信息，不能删除，建议修改状态为\"失效\"' % em_name
             js_ret['err_msg'] = str_msg
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
@@ -322,8 +332,17 @@ def del_em(js):
         str_sql = 'select count(*) from t_checkout where em_id=%s'
         cur.execute(str_sql, args=[em_id])
         r = cur.fetchone()
-        if r[0] == 0:
-            str_msg = '%s人员存在出库信息，不能删除，建议修改状态为 失效' % em_id
+        if r[0] > 0:
+            str_msg = '%s存在出库信息，不能删除，建议修改状态为\"失效\"' % em_name
+            js_ret['err_msg'] = str_msg
+            js_ret['result'] = False
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_bom where em_id=%s'
+        cur.execute(str_sql, args=[em_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '%s存在bom设计信息，不能删除，建议修改状态为\"失效\"' % em_name
             js_ret['err_msg'] = str_msg
             js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
