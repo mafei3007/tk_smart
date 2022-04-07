@@ -3,9 +3,9 @@
 """
 =================================================
 @Project   ： tk_smart
-@Author ：Ma fei
-@Date   ：2022-03-23 10:53
-@Desc   ：
+@Author ：   Ma fei
+@Date   ：   2022-03-23 10:53
+@Desc   ：   工具类
 ==================================================
 """
 import binascii
@@ -59,6 +59,20 @@ def des_decrypt(str_input):
     k = des(des_secret_key, CBC, iv, pad=None, padmode=PAD_PKCS5)
     de = k.decrypt(binascii.a2b_hex(str_input), padmode=PAD_PKCS5)
     return bytes.decode(de)
+
+
+# 判断字符串只能由数字、26个英文字母或者下划线组成
+def check_field_name(field_name):
+    if field_name is None:
+        return '不能为空'
+    if len(field_name.strip()) == 0:
+        return '长度不能为空'
+    if len(field_name) > 64:
+        return '长度不能超过64'
+    pattern = re.compile(r'[0-9a-zA-Z_]+$')
+    if not pattern.findall(field_name):
+        return '只能由数字、26个英文字母或者下划线组成'
+    return None
 
 
 # 校验密码复杂度是否符合要求

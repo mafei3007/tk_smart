@@ -19,6 +19,9 @@ comm_unit_type = ['数量', '重量', '容量', '面积', '长度', '自定义']
 # 系统默认角色，不能修改
 comm_role = ['超级用户', '仓库管理', '订单下发', '订单审核', '财务', '生产', '销售', '采购']
 
+# 默认扩展属性元数据代号
+comm_def_ext_code = ['BC', 'LEN']
+
 company_name = 'company_name'
 
 company_bank = 'company_bank'
