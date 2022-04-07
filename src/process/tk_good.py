@@ -325,7 +325,7 @@ def edit_gd(js):
         e_args.append(gd_id)
         if len(e_args) > 1:
             cur.execute(str_sql, args=e_args)
-        str_msg = '更新物料信息%s' % code
+        str_msg = '成功更新物料信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
