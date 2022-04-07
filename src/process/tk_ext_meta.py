@@ -11,6 +11,7 @@
 import datetime
 from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
+from constant import comm_def_ext_code
 
 
 # 查询
@@ -51,11 +52,22 @@ def add_ext_meta(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    code = js['code']
+    code = js['code'].upper()
+    name = js.get('name', None)
     elastic = js.get('elastic', '否')
     basic_unit = js.get('basic_unit', None)
     status = js.get('status', '有效')
     remark = js.get('remark', '')
+    if name is None or name.strip() == '':
+        str_msg = '名称不能为空'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
+    if code in comm_def_ext_code:
+        str_msg = '默认扩展元数据类型不用添加'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
     if status not in ['有效', '无效']:
         str_msg = '状态必须是\"有效\"或者\"无效\"'
         js_ret['err_msg'] = str_msg
@@ -79,8 +91,8 @@ def add_ext_meta(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'insert into t_ext_meta(code,elastic,basic_unit,status,remark) values(%s,%s,%s,%s,%s)'
-        cur.execute(str_sql, args=[code, elastic, basic_unit, status, remark])
+        str_sql = 'insert into t_ext_meta(code,name,elastic,basic_unit,status,remark) values(%s,%s,%s,%s,%s,%s)'
+        cur.execute(str_sql, args=[code, name, elastic, basic_unit, status, remark])
         str_msg = '新增扩展元数据信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
@@ -101,11 +113,12 @@ def edit_ext_meta(js):
     opt_id = js['opt_id']
     ext_meta_id = js['id']
     code = js.get('code', None)
+    name = js.get('name', None)
     elastic = js.get('elastic', None)
     basic_unit = js.get('basic_unit', None)
     status = js.get('status', None)
     remark = js.get('remark', None)
-    if is_none([code, elastic, basic_unit, status, remark]):
+    if is_none([code, name, elastic, basic_unit, status, remark]):
         str_msg = '没有需要更新的信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
@@ -121,11 +134,17 @@ def edit_ext_meta(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_ext_meta where id=%s'
+        str_sql = 'select code,name from t_ext_meta where id=%s'
         cur.execute(str_sql, args=[ext_meta_id])
         r = cur.fetchone()
-        if r[0] == 0:
+        if r is None:
             str_msg = '扩展元数据%s不存在，无法更新' % ext_meta_id
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        old_code = r[0]  # 之前的代号
+        if old_code in comm_def_ext_code:  # 如果是系统自带的类型，则不能修改代号
+            str_msg = '系统默认的扩展元数据%s不能修改' % old_code
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
@@ -143,6 +162,9 @@ def edit_ext_meta(js):
         if code:
             str_tmp = str_tmp + ',code=%s'
             e_args.append(code)
+        if name:
+            str_tmp = str_tmp + ',name=%s'
+            e_args.append(name)
         if elastic:
             str_tmp = str_tmp + ',elastic=%s'
             e_args.append(elastic)
@@ -158,6 +180,10 @@ def edit_ext_meta(js):
         str_sql = 'update t_ext_meta set ' + str_tmp[1:] + ' where id=%s'
         e_args.append(ext_meta_id)
         cur.execute(str_sql, args=e_args)
+        if code:
+            if code != old_code:
+                str_sql = 'ALTER TABLE t_good_inst CHANGE %s %s VARCHAR(256) DEFAULT NULL' % (old_code, code)
+                cur.execute(str_sql)
         str_msg = '更新扩展元数据信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
@@ -182,13 +208,19 @@ def del_ext_meta(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select id from t_ext_meta where id=%s'
+        str_sql = 'select code from t_ext_meta where id=%s'
         cur.execute(str_sql, args=[ext_meta_id])
         r = cur.fetchone()
         if r is None:
             str_msg = '%s不存在,删除失败' % ext_meta_id
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        code = r[0]
+        if code in comm_def_ext_code:
+            str_msg = '系统默认的扩展元数据%s不能删除' % code
+            js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
         str_sql = 'select count(*) from t_ext where ext_meta_id=%s'
