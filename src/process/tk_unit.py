@@ -74,7 +74,7 @@ def add_unit(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     if basic_unit == u_code and conversion_rate != 1:
-        str_msg = '%s为基础单位，但换算率不为1，无法添加' % u_code
+        str_msg = '%s为基础单位，换算率必须要为1，否则无法添加' % u_code
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -125,7 +125,7 @@ def edit_unit(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     if basic_unit == u_code and (conversion_rate and conversion_rate != 1):
-        str_msg = '%s为基础单位，但换算率不为1，无法编辑' % u_code
+        str_msg = '%s为基础单位，换算率必须要为1，否则无法编辑' % u_code
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret

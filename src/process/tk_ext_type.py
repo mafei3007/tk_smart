@@ -91,6 +91,14 @@ def add_ext_type(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
+        str_sql = 'select count(*) from t_unit where basic_unit=%s and u_code=basic_unit'
+        cur.execute(str_sql, args=[basic_unit])
+        r = cur.fetchone()
+        if r[0] == 0:
+            str_msg = '基准单位%s不存在，无法添加' % basic_unit
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
         str_sql = 'insert into t_ext_type(code,name,elastic,basic_unit,status,remark) values(%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql, args=[code, name, elastic, basic_unit, status, remark])
         str_sql = 'alter table t_good_inst add column %s bigint(20) null default null' % code
@@ -162,6 +170,15 @@ def edit_ext_type(js):
             r = cur.fetchone()
             if r[0] > 0:
                 str_msg = '扩展类型代号%s不能重复，无法更新' % code
+                js_ret['err_msg'] = str_msg
+                write_log(str_msg, tenant=tenant)
+                return js_ret
+        if basic_unit:
+            str_sql = 'select count(*) from t_unit where basic_unit=%s and u_code=basic_unit'
+            cur.execute(str_sql, args=[basic_unit])
+            r = cur.fetchone()
+            if r[0] == 0:
+                str_msg = '基准单位%s不存在，无法更新' % basic_unit
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
@@ -267,7 +284,8 @@ def del_ext_type(js):
 def main():
     js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
     print(get_ext_type_list(js))
-    js = {'tenant': 'tk_huawei', 'code': '测试元数据', 'elastic': '否', 'basic_unit': '米', 'status': '是', 'remark': '备注信息',
+    js = {'tenant': 'tk_huawei', 'code': 'PRESS', 'name': '压力属性', 'elastic': '否', 'basic_unit': '米', 'status': '有效',
+          'remark': '备注信息',
           'opt_id': 1}
     print(add_ext_type(js))
     # js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
