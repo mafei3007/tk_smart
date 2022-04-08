@@ -21,7 +21,7 @@ def get_ext_list(js):
     js_ret['len'] = -1
     js_ret['data'] = list()
     tenant = js['tenant']
-    ext_meta_id = js.get('ext_meta_id', None)
+    ext_type_id = js.get('ext_type_id', None)
     page_no = js.get('page_no', 0)
     page_size = js.get('page_size', 0)
     order_field = js.get('order_field', 'id')
@@ -32,13 +32,13 @@ def get_ext_list(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_count = 'select count(a.id) from t_ext as a,t_ext_meta as b where a.ext_meta_id=b.id'
-        str_sql = 'select a.id,a.value,a.remark,b.id as ext_meta_id, b.code as ext_code from t_ext as a,' \
-                  't_ext_meta as b where a.ext_meta_id=b.id'
-        if ext_meta_id:
+        str_count = 'select count(a.id) from t_ext as a,t_ext_type as b where a.ext_type_id=b.id'
+        str_sql = 'select a.id,a.value,a.remark,b.id as ext_type_id, b.code as ext_code from t_ext as a,' \
+                  't_ext_type as b where a.ext_type_id=b.id'
+        if ext_type_id:
             str_sql = str_sql + ' and b.id=%s'
             str_count = str_count + ' and b.id=%s'
-            qry_args.append(ext_meta_id)
+            qry_args.append(ext_type_id)
         cur.execute(str_count, args=qry_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
@@ -73,7 +73,7 @@ def add_ext(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    ext_meta_id = js.get('ext_meta_id', None)
+    ext_type_id = js.get('ext_type_id', None)
     value = js.get('value', None)
     status = js.get('status', '有效')
     remark = js.get('remark', '')
@@ -82,7 +82,7 @@ def add_ext(js):
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
-    if is_not_none([ext_meta_id, value]):
+    if is_not_none([ext_type_id, value]):
         str_msg = '元数据、值不能为空.'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
@@ -92,26 +92,26 @@ def add_ext(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select code from t_ext_meta where id=%s and status=%s'
-        cur.execute(str_sql, args=[ext_meta_id, '有效'])
+        str_sql = 'select code from t_ext_type where id=%s and status=%s'
+        cur.execute(str_sql, args=[ext_type_id, '有效'])
         r = cur.fetchone()
         if r is None:
-            str_msg = '不存在有效的元数据%s，无法新增扩展属性' % ext_meta_id
+            str_msg = '不存在有效的扩展类型%s，无法新增扩展属性' % ext_type_id
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
         ext_code = r[0]
-        str_sql = 'select count(*) from t_ext where ext_meta_id=%s and value=%s'
-        cur.execute(str_sql, args=[ext_meta_id, value])
+        str_sql = 'select count(*) from t_ext where ext_type_id=%s and value=%s'
+        cur.execute(str_sql, args=[ext_type_id, value])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '元数据%s，值%s的属性已经存在，不能重复添加' % (ext_code, value)
+            str_msg = '扩展类型%s，值%s的属性实例已经存在，不能重复添加' % (ext_code, value)
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'insert into t_ext(ext_meta_id,value,status,remark) values(%s,%s,%s,%s)'
-        cur.execute(str_sql, args=[ext_meta_id, value, status, remark])
-        str_msg = '创建元数据%s，值%s的扩展属性' % (ext_code, value)
+        str_sql = 'insert into t_ext(ext_type_id,value,status,remark) values(%s,%s,%s,%s)'
+        cur.execute(str_sql, args=[ext_type_id, value, status, remark])
+        str_msg = '创建扩展属性%s，值%s的扩展属性实例信息' % (ext_code, value)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -130,12 +130,12 @@ def edit_ext(js):
     tenant = js['tenant']
     opt_id = js['opt_id']
     ext_id = js['id']
-    ext_meta_id = js.get('ext_meta_id', None)
+    ext_type_id = js.get('ext_type_id', None)
     value = js.get('value', None)
     status = js.get('status', None)
     remark = js.get('remark', None)
-    if is_none([ext_meta_id, value, status, remark]):
-        str_msg = '没有需要更新扩展属性'
+    if is_none([ext_type_id, value, status, remark]):
+        str_msg = '没有需要更新的扩展属性实例信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -154,24 +154,24 @@ def edit_ext(js):
         cur.execute(str_sql, args=[ext_id])
         r = cur.fetchone()
         if r[0] == 0:
-            str_msg = '扩展属性%s不存在，无法更新' % ext_id
+            str_msg = '扩展属性实例%s不存在，无法更新' % ext_id
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        if ext_meta_id:
-            str_sql = 'select count(*) from t_ext_meta where id=%s'
-            cur.execute(str_sql, args=[ext_meta_id])
+        if ext_type_id:
+            str_sql = 'select count(*) from t_ext_type where id=%s'
+            cur.execute(str_sql, args=[ext_type_id])
             r = cur.fetchone()
             if r[0] > 0:
-                str_msg = '元数据%s不存在，无法更新' % ext_meta_id
+                str_msg = '扩展类型%s不存在，无法更新' % ext_type_id
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
         str_sql = 'update t_ext set '
         e_args = []
-        if ext_meta_id:
-            str_sql = str_sql + ',ext_meta_id=%s'
-            e_args.append(ext_meta_id)
+        if ext_type_id:
+            str_sql = str_sql + ',ext_type_id=%s'
+            e_args.append(ext_type_id)
         if value:
             str_sql = str_sql + ',value=%s'
             e_args.append(value)

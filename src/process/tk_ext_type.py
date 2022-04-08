@@ -4,18 +4,18 @@
 @Project ：tk_smart
 @Author ：Ma fei
 @Date   ：2022-04-04 12:54
-@Desc   ：物料扩展属性管理
+@Desc   ：物料扩展类型管理
 ==================================================
 """
 
 import datetime
-from tk_util import write_log, free_obj, is_none
+from tk_util import write_log, free_obj, is_none, check_field_name
 from db.comm_cnn import CommonCnn
 from constant import comm_def_ext_code
 
 
 # 查询
-def get_ext_meta_list(js):
+def get_ext_type_list(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1
@@ -27,7 +27,7 @@ def get_ext_meta_list(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_sql = 'select * from t_ext_meta order by code asc'
+        str_sql = 'select * from t_ext_type order by code asc'
         cur.execute(str_sql, args=qry_args)
         rr = cur.fetchall()
         js_ret['len'] = len(rr)
@@ -46,7 +46,7 @@ def get_ext_meta_list(js):
 
 
 # 添加
-def add_ext_meta(js):
+def add_ext_type(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False
@@ -64,7 +64,7 @@ def add_ext_meta(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     if code in comm_def_ext_code:
-        str_msg = '默认扩展元数据类型不用添加'
+        str_msg = '默认扩展类型不用添加'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -83,7 +83,7 @@ def add_ext_meta(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_ext_meta where code=%s'
+        str_sql = 'select count(*) from t_ext_type where code=%s'
         cur.execute(str_sql, args=[code])
         r = cur.fetchone()
         if r[0] > 0:
@@ -91,9 +91,11 @@ def add_ext_meta(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'insert into t_ext_meta(code,name,elastic,basic_unit,status,remark) values(%s,%s,%s,%s,%s,%s)'
+        str_sql = 'insert into t_ext_type(code,name,elastic,basic_unit,status,remark) values(%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql, args=[code, name, elastic, basic_unit, status, remark])
-        str_msg = '新增扩展元数据信息%s' % code
+        str_sql = 'alter table t_good_inst add column %s bigint(20) null default null' % code
+        cur.execute(str_sql)
+        str_msg = '新增扩展类型信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -105,13 +107,13 @@ def add_ext_meta(js):
 
 
 # 修改
-def edit_ext_meta(js):
+def edit_ext_type(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    ext_meta_id = js['id']
+    ext_type_id = js['id']
     code = js.get('code', None)
     name = js.get('name', None)
     elastic = js.get('elastic', None)
@@ -123,6 +125,12 @@ def edit_ext_meta(js):
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
+    if code:  # 如果代号修改了，那就需要判断代号是否符合要求
+        str_msg = check_field_name(code)
+        if str_msg:
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
     if status:
         if status not in ['有效', '无效']:
             str_msg = '状态必须是\"有效\"或者\"无效\"'
@@ -134,26 +142,26 @@ def edit_ext_meta(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select code,name from t_ext_meta where id=%s'
-        cur.execute(str_sql, args=[ext_meta_id])
+        str_sql = 'select code,name from t_ext_type where id=%s'
+        cur.execute(str_sql, args=[ext_type_id])
         r = cur.fetchone()
         if r is None:
-            str_msg = '扩展元数据%s不存在，无法更新' % ext_meta_id
+            str_msg = '扩展类型%s不存在，无法更新' % ext_type_id
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
         old_code = r[0]  # 之前的代号
         if old_code in comm_def_ext_code:  # 如果是系统自带的类型，则不能修改代号
-            str_msg = '系统默认的扩展元数据%s不能修改' % old_code
+            str_msg = '系统默认的扩展类型%s不能修改' % old_code
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
         if code:
-            str_sql = 'select count(*) from t_ext_meta where id!=%s and code=%s'
-            cur.execute(str_sql, args=[ext_meta_id, code])
+            str_sql = 'select count(*) from t_ext_type where id!=%s and code=%s'
+            cur.execute(str_sql, args=[ext_type_id, code])
             r = cur.fetchone()
             if r[0] > 0:
-                str_msg = '扩展元数据代号%s不能重复，无法更新' % code
+                str_msg = '扩展类型代号%s不能重复，无法更新' % code
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
@@ -177,14 +185,14 @@ def edit_ext_meta(js):
         if remark:
             str_tmp = str_tmp + ',remark=%s'
             e_args.append(remark)
-        str_sql = 'update t_ext_meta set ' + str_tmp[1:] + ' where id=%s'
-        e_args.append(ext_meta_id)
+        str_sql = 'update t_ext_type set ' + str_tmp[1:] + ' where id=%s'
+        e_args.append(ext_type_id)
         cur.execute(str_sql, args=e_args)
         if code:
             if code != old_code:
-                str_sql = 'ALTER TABLE t_good_inst CHANGE %s %s VARCHAR(256) DEFAULT NULL' % (old_code, code)
+                str_sql = 'alter table t_good_inst change %s %s bigint(20) null default null' % (old_code, code)
                 cur.execute(str_sql)
-        str_msg = '更新扩展元数据信息%s' % code
+        str_msg = '更新扩展类型信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -196,47 +204,56 @@ def edit_ext_meta(js):
 
 
 # 删除
-def del_ext_meta(js):
+def del_ext_type(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    ext_meta_id = js['id']
+    ext_type_id = js['id']
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select code from t_ext_meta where id=%s'
-        cur.execute(str_sql, args=[ext_meta_id])
+        str_sql = 'select code from t_ext_type where id=%s'
+        cur.execute(str_sql, args=[ext_type_id])
         r = cur.fetchone()
         if r is None:
-            str_msg = '%s不存在,删除失败' % ext_meta_id
+            str_msg = '%s不存在,删除失败' % ext_type_id
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
         code = r[0]
         if code in comm_def_ext_code:
-            str_msg = '系统默认的扩展元数据%s不能删除' % code
+            str_msg = '系统默认的扩展类型%s不能删除' % code
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
         str_sql = 'select count(*) from t_ext where ext_meta_id=%s'
-        cur.execute(str_sql, args=[ext_meta_id])
+        cur.execute(str_sql, args=[ext_type_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '%s被扩展属性引用，无法删除，自动修改其状态为失效' % ext_meta_id
+            str_msg = '%s被扩展类型引用，无法删除，自动修改其状态为失效' % ext_type_id
             js_ret['err_msg'] = str_msg
-            js_ret['result'] = False
             write_log(str_msg, tenant=tenant)
-            str_sql = 'update t_ext_meta set status=%s where id=%s'
-            cur.execute(str_sql, args=['失效', ext_meta_id])
+            str_sql = 'update t_ext_type set status=%s where id=%s'
+            cur.execute(str_sql, args=['失效', ext_type_id])
             return js_ret
-        str_sql = 'delete from t_ext_meta where id=%s'
-        cur.execute(str_sql, args=[ext_meta_id])
-        str_msg = '删除扩展元数据信息%s' % ext_meta_id
+        str_sql = 'select count(*) from t_good_inst where %s is not null' % code
+        cur.execute(str_sql, args=[ext_type_id])
+        r = cur.fetchone()
+        if r[0] > 0:
+            str_msg = '扩展类型%s已经被产品引用，无法删除' % code
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'delete from t_ext_type where id=%s'
+        cur.execute(str_sql, args=[ext_type_id])
+        str_sql = 'alter table t_good_inst drop %s' % code
+        cur.execute(str_sql)
+        str_msg = '删除扩展类型%s' % ext_type_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -249,10 +266,10 @@ def del_ext_meta(js):
 
 def main():
     js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
-    print(get_ext_meta_list(js))
+    print(get_ext_type_list(js))
     js = {'tenant': 'tk_huawei', 'code': '测试元数据', 'elastic': '否', 'basic_unit': '米', 'status': '是', 'remark': '备注信息',
           'opt_id': 1}
-    print(add_ext_meta(js))
+    print(add_ext_type(js))
     # js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
     # print(del_ext_meta(js))
 

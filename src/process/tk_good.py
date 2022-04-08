@@ -410,6 +410,12 @@ def del_gd(js):
         else:
             str_sql = 'delete from t_good where id=%s'
             cur.execute(str_sql, args=[gd_id])
+        str_sql = 'delete from t_good_inst where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        str_sql = 'delete from t_bom where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        str_sql = 'delete from t_bom where mate_id=%s'
+        cur.execute(str_sql, args=[gd_id])
         str_msg = '删除物料%s' % gd_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
