@@ -52,7 +52,7 @@ def add_ext_type(js):
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    code = js['code'].upper()
+    code = js['code'].lower()
     name = js.get('name', None)
     elastic = js.get('elastic', '否')
     basic_unit = js.get('basic_unit', None)
@@ -134,6 +134,7 @@ def edit_ext_type(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     if code:  # 如果代号修改了，那就需要判断代号是否符合要求
+        code = code.lower()  # 转成小写
         str_msg = check_field_name(code)
         if str_msg:
             js_ret['err_msg'] = str_msg
@@ -284,9 +285,8 @@ def del_ext_type(js):
 def main():
     js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
     print(get_ext_type_list(js))
-    js = {'tenant': 'tk_huawei', 'code': 'PRESS', 'name': '压力属性', 'elastic': '否', 'basic_unit': '米', 'status': '有效',
-          'remark': '备注信息',
-          'opt_id': 1}
+    js = {'tenant': 'tk_huawei', 'code': 'PRESS', 'name': '压力属性', 'elastic': '否', 'basic_unit': '米',
+          'status': '有效', 'remark': '备注信息', 'opt_id': 1}
     print(add_ext_type(js))
     # js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
     # print(del_ext_meta(js))

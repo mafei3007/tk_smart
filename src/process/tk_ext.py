@@ -22,6 +22,8 @@ def get_ext_list(js):
     js_ret['data'] = list()
     tenant = js['tenant']
     ext_type_id = js.get('ext_type_id', None)
+    ext_type_code = js.get('ext_type_code', None)
+    value = js.get('value', None)
     page_no = js.get('page_no', 0)
     page_size = js.get('page_size', 0)
     order_field = js.get('order_field', 'id')
@@ -32,13 +34,21 @@ def get_ext_list(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_count = 'select count(a.id) from t_ext as a,t_ext_type as b where a.ext_type_id=b.id'
-        str_sql = 'select a.id,a.value,a.remark,b.id as ext_type_id, b.code as ext_code from t_ext as a,' \
+        str_count = 'select count(a.id) from t_ext as a,t_ext_type as b where a.ext_type_id=b.id '
+        str_sql = 'select a.id,a.value,a.remark,b.id as ext_type_id, b.code as ext_type_code from t_ext as a,' \
                   't_ext_type as b where a.ext_type_id=b.id'
         if ext_type_id:
             str_sql = str_sql + ' and b.id=%s'
             str_count = str_count + ' and b.id=%s'
             qry_args.append(ext_type_id)
+        if ext_type_code:
+            str_sql = str_sql + ' and b.code=%s'
+            str_count = str_count + ' and b.code=%s'
+            qry_args.append(ext_type_code)
+        if value:
+            str_sql = str_sql + ' and a.value=%s'
+            str_count = str_count + ' and a.value=%s'
+            qry_args.append(value)
         cur.execute(str_count, args=qry_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
@@ -208,7 +218,7 @@ def del_ext(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select id from t_ext where id=%s'
+        str_sql = 'select b.code,a.value from t_ext as a,t_ext_type as b where a.ext_type_id=b.id and a.id=%s'
         cur.execute(str_sql, args=[ext_inst_id])
         r = cur.fetchone()
         if r is None:
@@ -217,11 +227,13 @@ def del_ext(js):
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'select count(*) from t_ext where ext_inst_id=%s'
+        ext_type_code = r[0]  # 扩展类型代号
+        ext_value = r[1]  # 扩展实例值
+        str_sql = 'select count(*) from t_good_inst where ' + ext_type_code + '=%s'
         cur.execute(str_sql, args=[ext_inst_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '%s被物料引用了，无法删除，自动修改其状态为失效' % ext_inst_id
+            str_msg = '扩展类型%s，值=%s的实例被物料引用了，无法删除，自动修改其状态为失效' % (ext_type_code, ext_value)
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
@@ -242,8 +254,10 @@ def del_ext(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
-    print(del_ext(js))
+    js = {'tenant': 'tk_huawei', 'value': 'BS'}
+    print(get_ext_list(js))
+    # js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
+    # print(del_ext(js))
 
 
 if __name__ == '__main__':
