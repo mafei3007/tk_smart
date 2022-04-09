@@ -14,7 +14,7 @@ from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
-# 查询仓库信息
+# 查询信息
 def get_stock(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -53,7 +53,7 @@ def get_stock(js):
         cnn.close()
 
 
-# 添加仓库
+# 添加
 def add_stock(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -89,7 +89,7 @@ def add_stock(js):
         cnn.close()
 
 
-# 修改仓库
+# 修改
 def edit_stock(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

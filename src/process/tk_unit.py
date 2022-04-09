@@ -13,7 +13,7 @@ from db.comm_cnn import CommonCnn
 from constant import comm_unit_type
 
 
-# 查询单位信息
+# 查询信息
 def get_unit(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -52,7 +52,7 @@ def get_unit(js):
         cnn.close()
 
 
-# 添加单位
+# 添加
 def add_unit(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -108,7 +108,7 @@ def add_unit(js):
         cnn.close()
 
 
-# 修改单位，code 不能修改
+# 修改，code 不能修改
 def edit_unit(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

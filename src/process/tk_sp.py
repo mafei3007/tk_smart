@@ -12,7 +12,7 @@ from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
-# 查询人员列表信息
+# 查询信息
 def get_sp_list(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -80,7 +80,7 @@ def get_sp_list(js):
         cnn.close()
 
 
-# 添加人员
+# 添加
 def add_sp(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -133,7 +133,7 @@ def add_sp(js):
         cnn.close()
 
 
-# 修改人员
+# 修改
 def edit_sp(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -237,7 +237,7 @@ def edit_sp(js):
         cnn.close()
 
 
-# 删除人员
+# 删除
 def del_sp(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

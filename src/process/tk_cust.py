@@ -12,7 +12,7 @@ from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
-# 查询客户列表信息
+# 查询信息
 def get_cust_list(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -85,7 +85,7 @@ def get_cust_list(js):
         cnn.close()
 
 
-# 添加客户
+# 添加
 def add_cust(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -137,7 +137,7 @@ def add_cust(js):
         cnn.close()
 
 
-# 修改客户
+# 修改
 def edit_cust(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -240,7 +240,7 @@ def edit_cust(js):
         cnn.close()
 
 
-# 删除客户
+# 删除
 def del_cust(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

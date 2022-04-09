@@ -13,7 +13,7 @@ from tk_util import write_log, free_obj, is_none
 from db.comm_cnn import CommonCnn
 
 
-# 查询小组列表信息
+# 查询信息
 def get_team_list(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

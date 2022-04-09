@@ -91,7 +91,7 @@ def get_em_list(js):
         cnn.close()
 
 
-# 添加人员
+# 添加
 def add_em(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -154,7 +154,7 @@ def add_em(js):
         cnn.close()
 
 
-# 修改人员
+# 修改
 def edit_em(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -269,7 +269,7 @@ def edit_em(js):
         cnn.close()
 
 
-# 删除人员
+# 删除
 def del_em(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

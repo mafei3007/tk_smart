@@ -43,7 +43,7 @@ def get_ws_list(js):
         cnn.close()
 
 
-# 添加工艺
+# 添加
 def add_ws(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

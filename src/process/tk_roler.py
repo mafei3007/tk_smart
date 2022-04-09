@@ -13,7 +13,7 @@ from db.comm_cnn import CommonCnn
 from constant import comm_role
 
 
-# 查询角色信息
+# 查询信息
 def get_role(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -52,7 +52,7 @@ def get_role(js):
         cnn.close()
 
 
-# 添加角色
+# 添加
 def add_role(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -87,7 +87,7 @@ def add_role(js):
         cnn.close()
 
 
-# 修改角色
+# 修改
 def edit_role(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
@@ -149,7 +149,7 @@ def edit_role(js):
         cnn.close()
 
 
-# 删除角色
+# 删除
 def del_role(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

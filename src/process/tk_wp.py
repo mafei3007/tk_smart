@@ -43,7 +43,7 @@ def get_wp_list(js):
         cnn.close()
 
 
-# 添加工序
+# 添加
 def add_wp(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

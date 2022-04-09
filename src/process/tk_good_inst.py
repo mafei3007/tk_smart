@@ -1,19 +1,20 @@
 # -*- coding: UTF-8 -*-
 """
 =================================================
-@Project   ： tk_smart
+@Project ：tk_smart
 @Author ：Ma fei
-@Date   ：2022-03-30 22:23
-@Desc   ：物料管理
+@Date   ：2022-04-10 06:49
+@Desc   ：产品实例管理
 ==================================================
 """
+
 import datetime
 from tk_util import write_log, free_obj, is_none, is_not_none
 from db.comm_cnn import CommonCnn
 
 
 # 查询信息
-def get_gd_list(js):
+def get_gd_inst_list(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1
@@ -26,10 +27,6 @@ def get_gd_list(js):
     alarm = js.get('alarm', None)  # 库存告警
     status = js.get('status', None)  # 产品状态
     u_code = js.get('u_code', None)  # 单位
-    valid_days = js.get('valid_days', None)  # 有效期
-    stock_id = js.get('stock_id', None)  # 默认仓库
-    wp = js.get('wp', None)  # 产品工序
-    remark = js.get('remark', None)
     page_no = js.get('page_no', 0)
     page_size = js.get('page_size', 0)
     order_field = js.get('order_field', 'id')
