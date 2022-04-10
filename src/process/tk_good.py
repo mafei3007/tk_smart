@@ -28,6 +28,7 @@ def get_gd_list(js):
     u_code = js.get('u_code', None)  # 单位
     valid_days = js.get('valid_days', None)  # 有效期
     stock_id = js.get('stock_id', None)  # 默认仓库
+    stock_name = js.get('stock_name', None)  # 默认仓库
     wp = js.get('wp', None)  # 产品工序
     remark = js.get('remark', None)
     page_no = js.get('page_no', 0)
@@ -39,52 +40,58 @@ def get_gd_list(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_count = 'select count(*) from t_good where 1=1'
-        str_sql = 'select * from t_good where 1=1'
+        str_count = 'select a.id,a.name,a.category,a.code,a.gb,a.u_code,a.alarm,a.status,a.valid_days,' \
+                    'a.stock_id,a.wp,a.remark,b.name as stock_name from t_good as a,t_stock as b where ' \
+                    'a.stock_id=b.id'
+        str_sql = 'select count(a.id) from t_good as a,t_stock as b where a.stock_id=b.id'
         e_args = []
         if name:
-            str_sql = str_sql + ' and name=%s'
-            str_count = str_count + ' and name=%s'
+            str_sql = str_sql + ' and a.name=%s'
+            str_count = str_count + ' and a.name=%s'
             e_args.append(name)
         if category:
-            str_sql = str_sql + ' and category=%s'
-            str_count = str_count + ' and category=%s'
+            str_sql = str_sql + ' and a.category=%s'
+            str_count = str_count + ' and a.category=%s'
             e_args.append(category)
         if code:
-            str_sql = str_sql + ' and code=%s'
-            str_count = str_count + ' and code=%s'
+            str_sql = str_sql + ' and a.code=%s'
+            str_count = str_count + ' and a.code=%s'
             e_args.append(code)
         if gb:
-            str_sql = str_sql + ' and gb=%s'
-            str_count = str_count + ' and gb=%s'
+            str_sql = str_sql + ' and a.gb=%s'
+            str_count = str_count + ' and a.gb=%s'
             e_args.append(gb)
         if u_code:
-            str_sql = str_sql + ' and u_code=%s'
-            str_count = str_count + ' and u_code=%s'
+            str_sql = str_sql + ' and a.u_code=%s'
+            str_count = str_count + ' and a.u_code=%s'
             e_args.append(u_code)
         if alarm:
-            str_sql = str_sql + ' and alarm=%s'
-            str_count = str_count + ' and alarm=%s'
+            str_sql = str_sql + ' and a.alarm=%s'
+            str_count = str_count + ' and a.alarm=%s'
             e_args.append(alarm)
         if status:
-            str_sql = str_sql + ' and status=%s'
-            str_count = str_count + ' and status=%s'
+            str_sql = str_sql + ' and a.status=%s'
+            str_count = str_count + ' and a.status=%s'
             e_args.append(status)
         if valid_days:
-            str_sql = str_sql + ' and valid_days=%s'
-            str_count = str_count + ' and valid_days=%s'
+            str_sql = str_sql + ' and a.valid_days=%s'
+            str_count = str_count + ' and a.valid_days=%s'
             e_args.append(valid_days)
         if stock_id:
-            str_sql = str_sql + ' and stock_id=%s'
-            str_count = str_count + ' and stock_id=%s'
+            str_sql = str_sql + ' and a.stock_id=%s'
+            str_count = str_count + ' and a.stock_id=%s'
             e_args.append(stock_id)
+        if stock_name:
+            str_sql = str_sql + ' and b.name=%s'
+            str_count = str_count + ' and b.name=%s'
+            e_args.append(stock_name)
         if wp:
-            str_sql = str_sql + ' and wp=%s'
-            str_count = str_count + ' and wp=%s'
+            str_sql = str_sql + ' and a.wp=%s'
+            str_count = str_count + ' and a.wp=%s'
             e_args.append(wp)
         if remark:
-            str_sql = str_sql + ' and instr(remark,%s)'
-            str_count = str_count + ' and instr(remark,%s)'
+            str_sql = str_sql + ' and instr(a.remark,%s)'
+            str_count = str_count + ' and instr(a.remark,%s)'
             e_args.append(remark)
         cur.execute(str_count, args=e_args)
         r = cur.fetchone()
@@ -138,11 +145,6 @@ def add_gd(js):
         return js_ret
     if is_not_none([name, category, code, gb, u_code]):
         str_msg = '名称、类别、代号、规格、单位不能为空'
-        js_ret['err_msg'] = str_msg
-        write_log(str_msg, tenant=tenant)
-        return js_ret
-    if category not in ['产品', '原料']:
-        str_msg = '产品类别%s不正确，必须是\"产品\"或\"原料\"' % category
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret

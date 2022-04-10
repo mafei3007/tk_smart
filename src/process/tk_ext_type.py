@@ -27,7 +27,7 @@ def get_ext_type_list(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_sql = 'select * from t_ext_type order by code asc'
+        str_sql = 'select id,code,name,elastic,basic_unit,status,remark from t_ext_type order by code asc'
         cur.execute(str_sql, args=qry_args)
         rr = cur.fetchall()
         js_ret['len'] = len(rr)

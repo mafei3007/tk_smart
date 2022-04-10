@@ -25,7 +25,7 @@ def get_wp_list(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_sql = 'select * from t_wp order by code asc'
+        str_sql = 'select id,code,status,ws_list,remark from t_wp order by code asc'
         cur.execute(str_sql, args=qry_args)
         rr = cur.fetchall()
         js_ret['len'] = len(rr)

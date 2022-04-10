@@ -22,7 +22,7 @@ def get_cust_list(js):
     cust_id = js.get('id', None)
     name = js.get('name', None)
     code = js.get('code', None)
-    status = js.get('status', '有效')
+    status = js.get('status', None)
     start_dt = js.get('start_dt', None)
     end_dt = js.get('end_dt', None)
     page_no = js.get('page_no', 0)
@@ -35,9 +35,9 @@ def get_cust_list(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_count = 'select count(*) from t_cust where status=%s'
-        str_sql = 'select * from t_cust where status=%s'
-        qry_args.append(status)
+        str_count = 'select count(id) from t_cust where 1=1'
+        str_sql = 'select id,name,code,status,bank,account,credit_code,address,contact,phone,email,status,' \
+                  'remark from t_cust where 1=1'
         if cust_id:
             str_sql = str_sql + ' and id=%s'
             str_count = str_count + ' and id=%s'
@@ -50,6 +50,10 @@ def get_cust_list(js):
             str_sql = str_sql + ' and code=%s'
             str_count = str_count + ' and code=%s'
             qry_args.append(code)
+        if status:
+            str_sql = str_sql + ' and status=%s'
+            str_count = str_count + ' and status=%s'
+            qry_args.append(status)
         if start_dt:
             str_sql = str_sql + ' and dt>=%s'
             str_count = str_count + ' and dt>=%s'

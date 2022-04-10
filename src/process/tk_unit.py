@@ -28,7 +28,7 @@ def get_unit(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_sql = 'select * from t_unit'
+        str_sql = 'select u_code,u_type,basic_unit,conversion_rate,dt,remark from t_unit'
         str_sql = str_sql + ' order by ' + order_field + ' ' + order
         if qry_args:
             str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
