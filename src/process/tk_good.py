@@ -42,10 +42,10 @@ def get_gd_list(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_count = 'select a.id,a.name,a.category,a.code,a.gb,a.u_code,a.alarm,a.status,a.valid_days,' \
-                    'a.stock_id,a.wp,a.remark,a.dt,b.name as stock_name from t_good as a,t_stock as b where ' \
-                    'a.stock_id=b.id'
-        str_sql = 'select count(a.id) from t_good as a,t_stock as b where a.stock_id=b.id'
+        str_sql = 'select a.id,a.name,a.category,a.code,a.gb,a.u_code,a.alarm,a.status,a.valid_days,' \
+                  'a.stock_id,a.wp,a.remark,a.dt,b.name as stock_name from t_good as a,t_stock as b where ' \
+                  'a.stock_id=b.id'
+        str_count = 'select count(a.id) from t_good as a,t_stock as b where a.stock_id=b.id'
         e_args = []
         if name:
             str_sql = str_sql + ' and a.name=%s'
@@ -96,12 +96,12 @@ def get_gd_list(js):
             str_count = str_count + ' and instr(a.remark,%s)'
             e_args.append(remark)
         if start_dt:
-            str_sql = str_sql + ' and dt>=%s'
-            str_count = str_count + ' and dt>=%s'
+            str_sql = str_sql + ' and a.dt>=%s'
+            str_count = str_count + ' and a.dt>=%s'
             e_args.append(start_dt)
         if end_dt:
-            str_sql = str_sql + ' and dt<=%s'
-            str_count = str_count + ' and dt<=%s'
+            str_sql = str_sql + ' and a.dt<=%s'
+            str_count = str_count + ' and a.dt<=%s'
             e_args.append(end_dt)
         cur.execute(str_count, args=e_args)
         r = cur.fetchone()
