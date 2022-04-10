@@ -115,8 +115,8 @@ def add_gd_inst(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         lst_ext_type = list()
-        str_sql = 'select code from t_ext_type'
-        cur.execute(str_sql)
+        str_sql = 'select code from t_ext_type where status=%s'
+        cur.execute(str_sql, args=['有效'])
         rr = cur.fetchall()
         for r in rr:
             lst_ext_type.append(r[0])
@@ -189,8 +189,8 @@ def edit_gd_inst(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         lst_ext_type = list()
-        str_sql = 'select code from t_ext_type'
-        cur.execute(str_sql)
+        str_sql = 'select code from t_ext_type where status=%s'
+        cur.execute(str_sql, args=['有效'])
         rr = cur.fetchall()
         for r in rr:
             lst_ext_type.append(r[0])
@@ -213,6 +213,11 @@ def edit_gd_inst(js):
         for k in js_gd_ext.keys():
             str_tmp = str_tmp + ',' + k + '=%s'
             e_args.append(js_gd_ext[k])
+        if len(e_args) == 0:
+            str_msg = '没有待可以更新的信息'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
         str_sql = 'update t_good_inst set ' + str_tmp[1:] + ' where id=%s'
         e_args.append(gd_inst_id)
         if len(e_args) > 1:
@@ -313,7 +318,7 @@ def del_gd_inst(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'gd_id': 2136, 'opt_id': 1, 'bc': 1}
+    js = {'tenant': 'tk_huawei', 'gd_id': 2140, 'opt_id': 1, 'bc': 1}
     print(add_gd_inst(js))
     # js = {'tenant': 'tk_huawei', 'id': 123, 'opt_id': 1}
     # print(get_gd_inst_list(js))

@@ -233,7 +233,7 @@ def del_ext(js):
         cur.execute(str_sql, args=[ext_inst_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '扩展类型%s，值=%s的实例被物料引用了，无法删除，自动修改其状态为失效' % (ext_type_code, ext_value)
+            str_msg = '扩展类型=%s，值=%s的实例被物料引用了，无法删除，自动修改其状态为失效' % (ext_type_code, ext_value)
             js_ret['err_msg'] = str_msg
             js_ret['result'] = True
             write_log(str_msg, tenant=tenant)
@@ -256,8 +256,8 @@ def del_ext(js):
 def main():
     js = {'tenant': 'tk_huawei', 'value': 'BS'}
     print(get_ext_list(js))
-    # js = {'tenant': 'tk_huawei', 'code': 'sss', 'opt_id': 1}
-    # print(del_ext(js))
+    js = {'tenant': 'tk_huawei', 'id': 1, 'opt_id': 1}
+    print(del_ext(js))
 
 
 if __name__ == '__main__':

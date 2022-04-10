@@ -153,6 +153,22 @@ def add_gd(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
+        str_sql = 'select count(*) from t_stock where status=%s'
+        cur.execute(str_sql, args=['有效'])
+        r = cur.fetchone()
+        if r[0] == 0:
+            str_msg = '当前系统中没有可用的仓库信息，请先配置仓库信息'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        str_sql = 'select count(*) from t_wp where status=%s'
+        cur.execute(str_sql, args=['有效'])
+        r = cur.fetchone()
+        if r[0] == 0:
+            str_msg = '当前系统中没有可用的工序信息，请先配置工序信息'
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
         str_sql = 'select count(*) from t_good where name=%s and category=%s and code=%s and gb=%s and u_code=%s'
         cur.execute(str_sql, args=[name, category, code, gb, u_code])
         r = cur.fetchone()
@@ -182,10 +198,7 @@ def add_gd(js):
             str_sql = 'select id from t_stock order by id asc limit 1'
             cur.execute(str_sql, args=[stock_id])
             r = cur.fetchone()
-            if r:
-                stock_id = r[0]
-            else:
-                stock_id = 0
+            stock_id = r[0]
         if wp:
             str_sql = 'select count(*) from t_wp where id=%s'
             cur.execute(str_sql, args=[wp])
@@ -199,10 +212,7 @@ def add_gd(js):
             str_sql = 'select id from t_wp order by id asc limit 1'
             cur.execute(str_sql, args=[wp])
             r = cur.fetchone()
-            if r:
-                wp = r[0]
-            else:
-                wp = 0
+            wp = r[0]
         str_sql = 'insert into t_good(name,category,code,gb,u_code,alarm,status,valid_days,stock_id,wp,' \
                   'remark) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql,

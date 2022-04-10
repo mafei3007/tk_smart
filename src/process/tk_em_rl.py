@@ -82,7 +82,6 @@ def edit_role(js):
         str_msg = '更新用户%s的角色->%s，该角色权限重新登录后生效' % (em_name, rl_names)
         write_log(str_msg, tenant=tenant)
         js_ret['result'] = True
-
         return js_ret
     finally:
         free_obj(cur)
