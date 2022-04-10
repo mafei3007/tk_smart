@@ -36,53 +36,38 @@ def get_gd_inst_list(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_count = 'select count(*) from t_good where 1=1'
-        str_sql = 'select * from t_good where 1=1'
+        str_count = 'select count(a.id) from t_good_inst as a,t_good as b  where a.gd_id=b.id'
+        str_sql = 'select a.*,b.name,b.category,b.code,b.gb,b.u_code,b.status from t_good_inst as a,' \
+                  't_good as b  where a.gd_id=b.id'
         e_args = []
         if name:
-            str_sql = str_sql + ' and name=%s'
-            str_count = str_count + ' and name=%s'
+            str_sql = str_sql + ' and b.name=%s'
+            str_count = str_count + ' and b.name=%s'
             e_args.append(name)
         if category:
-            str_sql = str_sql + ' and category=%s'
-            str_count = str_count + ' and category=%s'
+            str_sql = str_sql + ' and b.category=%s'
+            str_count = str_count + ' and b.category=%s'
             e_args.append(category)
         if code:
-            str_sql = str_sql + ' and code=%s'
-            str_count = str_count + ' and code=%s'
+            str_sql = str_sql + ' and b.code=%s'
+            str_count = str_count + ' and b.code=%s'
             e_args.append(code)
         if gb:
-            str_sql = str_sql + ' and gb=%s'
-            str_count = str_count + ' and gb=%s'
+            str_sql = str_sql + ' and b.gb=%s'
+            str_count = str_count + ' and b.gb=%s'
             e_args.append(gb)
         if u_code:
-            str_sql = str_sql + ' and u_code=%s'
-            str_count = str_count + ' and u_code=%s'
+            str_sql = str_sql + ' and b.u_code=%s'
+            str_count = str_count + ' and b.u_code=%s'
             e_args.append(u_code)
         if alarm:
-            str_sql = str_sql + ' and alarm=%s'
-            str_count = str_count + ' and alarm=%s'
+            str_sql = str_sql + ' and b.alarm=%s'
+            str_count = str_count + ' and b.alarm=%s'
             e_args.append(alarm)
         if status:
-            str_sql = str_sql + ' and status=%s'
-            str_count = str_count + ' and status=%s'
+            str_sql = str_sql + ' and b.status=%s'
+            str_count = str_count + ' and b.status=%s'
             e_args.append(status)
-        if valid_days:
-            str_sql = str_sql + ' and valid_days=%s'
-            str_count = str_count + ' and valid_days=%s'
-            e_args.append(valid_days)
-        if stock_id:
-            str_sql = str_sql + ' and stock_id=%s'
-            str_count = str_count + ' and stock_id=%s'
-            e_args.append(stock_id)
-        if wp:
-            str_sql = str_sql + ' and wp=%s'
-            str_count = str_count + ' and wp=%s'
-            e_args.append(wp)
-        if remark:
-            str_sql = str_sql + ' and instr(remark,%s)'
-            str_count = str_count + ' and instr(remark,%s)'
-            e_args.append(remark)
         cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
@@ -111,98 +96,67 @@ def get_gd_inst_list(js):
 
 
 # 添加
-def add_gd(js):
+def add_gd_inst(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False
     tenant = js['tenant']
     opt_id = js['opt_id']
-    name = js.get('name', None)
-    category = js.get('category', None)
-    code = js.get('code', None)
-    gb = js.get('gb', None)
-    u_code = js.get('u_code', None)
-    alarm = js.get('alarm', 9999)
-    status = js.get('status', '有效')
-    valid_days = js.get('valid_days', 3650)
-    stock_id = js.get('stock_id', None)
-    wp = js.get('wp', None)
-    remark = js.get('remark', '')
-    if status not in ['有效', '无效']:
-        str_msg = '状态必须是\"有效\"或者\"无效\"'
+    gd_id = js.get('gd_id', None)
+    if gd_id is None:
+        str_msg = '产品ID不能为空，无法创建产品实例信息'
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
-    if is_not_none([name, category, code, gb, u_code]):
-        str_msg = '名称、类别、代号、规格、单位不能为空'
-        js_ret['err_msg'] = str_msg
-        write_log(str_msg, tenant=tenant)
-        return js_ret
-    if category not in ['产品', '原料']:
-        str_msg = '物料类别%s不正确，必须是\"产品\"或\"原料\"' % category
-        js_ret['err_msg'] = str_msg
-        write_log(str_msg, tenant=tenant)
-        return js_ret
+    js_gd_ext = dict()
+    for k in js.keys():  # 获取产品扩展属性值
+        if k == 'gd_id':
+            continue
+        js_gd_ext[k] = js[k]
     cnn = None
     cur = None
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        str_sql = 'select count(*) from t_good where name=%s and category=%s and code=%s and gb=%s and u_code=%s'
-        cur.execute(str_sql, args=[name, category, code, gb, u_code])
+        str_sql = 'select name,category,code,gb,u_code from t_good id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        r = cur.fetchone()
+        if r is None:
+            str_msg = '产品信息%s不存在，无法创建产品实例信息' % gd_id
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        name = r[0]
+        category = r[1]
+        code = [2]
+        gb = [3]
+        u_code = [4]
+        e_args = list()
+        s_info = '产品名称%s、类别%s、代号%s、规格%s、单位%s' % (name, category, code, gb, u_code)
+        str_sql = 'select count(*) from t_good_inst where gd_id=%s'
+        e_args.append(gd_id)
+        for k in js_gd_ext.keys():
+            str_sql = str_sql + ' and ' + k + '=%s'
+            e_args.append(js_gd_ext[k])
+        cur.execute(str_sql, args=e_args)
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '物料名称%s、类别%s、代号%s、规格%s、单位%s已经存在，无法新增' % (name, category, code, gb, u_code)
+            str_msg = '该产品实例信息已经存在，无法创建'
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-        str_sql = 'select count(*) from t_unit where u_code=%s'
-        cur.execute(str_sql, args=[u_code])
-        r = cur.fetchone()
-        if r[0] == 0:
-            str_msg = '无效的单位%s,请修改单位信息' % u_code
-            js_ret['err_msg'] = str_msg
-            write_log(str_msg, tenant=tenant)
-            return js_ret
-        if stock_id:
-            str_sql = 'select count(*) from t_stock where id=%s'
-            cur.execute(str_sql, args=[stock_id])
-            r = cur.fetchone()
-            if r[0] == 0:
-                str_msg = '无效的仓库信息%s' % stock_id
-                js_ret['err_msg'] = str_msg
-                write_log(str_msg, tenant=tenant)
-                return js_ret
-        else:
-            str_sql = 'select id from t_stock order by id asc limit 1'
-            cur.execute(str_sql, args=[stock_id])
-            r = cur.fetchone()
-            if r:
-                stock_id = r[0]
-            else:
-                stock_id = 0
-        if wp:
-            str_sql = 'select count(*) from t_wp where id=%s'
-            cur.execute(str_sql, args=[wp])
-            r = cur.fetchone()
-            if r[0] == 0:
-                str_msg = '无效的工序信息%s' % wp
-                js_ret['err_msg'] = str_msg
-                write_log(str_msg, tenant=tenant)
-                return js_ret
-        else:
-            str_sql = 'select id from t_wp order by id asc limit 1'
-            cur.execute(str_sql, args=[wp])
-            r = cur.fetchone()
-            if r:
-                wp = r[0]
-            else:
-                wp = 0
-        str_sql = 'insert into t_good(name,category,code,gb,u_code,alarm,status,valid_days,stock_id,wp,' \
-                  'remark) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-        cur.execute(str_sql,
-                    args=[name, category, code, gb, u_code, alarm, status, valid_days, stock_id, wp, remark])
-        str_msg = '物料名称%s、类别%s、代号%s、规格%s、单位%s添加成功' % (name, category, code, gb, u_code)
+        str_sql = 'insert into t_good_inst(gd_id'
+        str_end = ') values(%s'
+        e_args.clear()  # 清空之前的信息
+        e_args.append(gd_id)
+        for k in js_gd_ext.keys():
+            str_sql = str_sql + ',' + k
+            str_end = str_end + ',%s'
+            s_info = s_info + ',' + k + '值=' + js_gd_ext[k]
+            e_args.append(js_gd_ext[k])
+        str_sql = str_sql + str_end
+        cur.execute(str_sql, args=e_args)
+        str_msg = s_info + ' 添加成功'
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
