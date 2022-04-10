@@ -53,11 +53,11 @@ def get_pc_paid_info(js):
         cur = cnn.cursor()
         qry_args = []
         str_count = 'select count(b.id) from t_pc as a,t_pc_pay as b,t_em as c, t_supp as d,t_good as e ' \
-                    'where a.id=b.pc_id and a.sp_id=d.id and b.em_id=c.id and a.gd_id=e.id '
-        str_sql = 'select b.id,a.gd_id,a.dt as pc_dt, a.count as pc_count,a.sp_id,a.to_pay_amount,a.paid_amount,' \
+                    'where a.id=b.pc_id and a.sp_id=d.id and b.em_id=c.id and a.gd_inst_id=e.id '
+        str_sql = 'select b.id,a.gd_inst_id,a.dt as pc_dt, a.count as pc_count,a.sp_id,a.to_pay_amount,a.paid_amount,' \
                   'b.amount,b.dt as pay_dt,c.name as em_name,d.name as sp_name,e.name as gd_name,e.code ' \
                   'as gb_code,e.gb from t_pc as a,t_pc_pay as b,t_em as c, t_supp as d,t_good as e where ' \
-                  'a.id=b.pc_id and a.sp_id=d.id and b.em_id=c.id and a.gd_id=e.id '
+                  'a.id=b.pc_id and a.sp_id=d.id and b.em_id=c.id and a.gd_inst_id=e.id '
         if pc_id > 0:
             str_sql = str_sql + ' and a.id=%s'
             str_count = str_count + ' and a.id=%s'
@@ -127,14 +127,14 @@ def get_pc_checkin(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_count = 'select count(a.gd_id) from t_checkin as a,t_pc as b,t_em as c, t_stock as d, t_supp as e,' \
+        str_count = 'select count(a.gd_inst_id) from t_checkin as a,t_pc as b,t_em as c, t_stock as d, t_supp as e,' \
                     't_good as f where a.pc_id=b.id and a.em_id=c.id and a.stock_id=d.id and b.sp_id=e.id ' \
-                    'and b.gd_id=f.id '
-        str_sql = 'select a.gd_id,a.dt as checkin_dt, a.count as checkin_count,a.barcode,b.name as pc_name,' \
+                    'and b.gd_inst_id=f.id '
+        str_sql = 'select a.gd_inst_id,a.dt as checkin_dt, a.count as checkin_count,a.barcode,b.name as pc_name,' \
                   'b.count as pc_count,b.rec_count,b.dt as pc_dt, c.name as em_name, d.name as stock_name,' \
                   'e.name as sp_name,f.name as gd_name,f.code as gd_code,f.gb as gd_gb from t_checkin as a,' \
                   't_pc as b,t_em as c, t_stock as d, t_supp as e,t_good as f where a.pc_id=b.id and ' \
-                  'a.em_id=c.id and a.stock_id=d.id and b.sp_id=e.id and b.gd_id=f.id '
+                  'a.em_id=c.id and a.stock_id=d.id and b.sp_id=e.id and b.gd_inst_id=f.id '
         if pc_id > 0:
             str_sql = str_sql + ' and b.id=%s'
             str_count = str_count + ' and b.id=%s'
@@ -190,7 +190,7 @@ def get_pc(js):
     js_ret['data'] = list()
     tenant = js['tenant']
     pc_id = js.get('pc_id', 0)
-    gd_id = js.get('gd_id', 0)
+    gd_inst_id = js.get('gd_inst_id', 0)
     sp_id = js.get('sp_id', 0)
     em_id = js.get('em_id', 0)
     status = js.get('status', None)
@@ -206,19 +206,19 @@ def get_pc(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         qry_args = []
-        str_count = 'select count(a.id) from t_pc as a,t_good as b,t_em as c,t_supp as d where a.gd_id=b.id and ' \
+        str_count = 'select count(a.id) from t_pc as a,t_good as b,t_em as c,t_supp as d where a.gd_inst_id=b.id and ' \
                     'a.em_id=c.id and a.sp_id=d.id'
         str_sql = 'select a.*,b.name as gd_name,b.code as gd_code,b.gb as gd_gb,c.name as em_name,d.name as ' \
-                  'sp_name from t_pc as a,t_good as b,t_em as c,t_supp as d where a.gd_id=b.id and ' \
+                  'sp_name from t_pc as a,t_good as b,t_em as c,t_supp as d where a.gd_inst_id=b.id and ' \
                   'a.em_id=c.id and a.sp_id=d.id'
         if pc_id > 0:
             str_sql = str_sql + ' and a.id=%s'
             str_count = str_count + ' and a.id=%s'
             qry_args.append(pc_id)
-        if gd_id > 0:
-            str_sql = str_sql + ' and a.gd_id=%s'
+        if gd_inst_id > 0:
+            str_sql = str_sql + ' and a.gd_inst_id=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(gd_id)
+            qry_args.append(gd_inst_id)
         if sp_id > 0:
             str_sql = str_sql + ' and a.sp_id=%s'
             str_count = str_count + ' and a.id=%s'
@@ -269,14 +269,14 @@ def get_pc(js):
 # 新增采购订单
 def add_pc(js):
     """
-    js = {'tenant': 'tk_huawei', 'gd_id': 2132, 'sp_id': 567, 'pc_count': 1000.0,
+    js = {'tenant': 'tk_huawei', 'gd_inst_id': 2132, 'sp_id': 567, 'pc_count': 1000.0,
               'price': 12.34, 'remark': 'this is a test', 'em_id': 1}
     """
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['result'] = False
     tenant = js['tenant']
-    gd_id = js['gd_id']
+    gd_inst_id = js['gd_inst_id']
     sp_id = js['sp_id']
     pc_count = js['pc_count']
     price = js['price']
@@ -303,17 +303,17 @@ def add_pc(js):
             js_ret['err_msg'] = str_msg
             return js_ret
         str_sql = 'select id from t_good where id=%s'
-        cur.execute(str_sql, args=[gd_id])
+        cur.execute(str_sql, args=[gd_inst_id])
         r = cur.fetchone()
         if r is None:
-            str_msg = '物料%d不存在' % gd_id
+            str_msg = '物料%d不存在' % gd_inst_id
             js_ret['err_msg'] = str_msg
             return js_ret
         pc_name = get_pc_plan_name(tenant)
-        str_sql = 'insert into t_pc(name,gd_id,em_id,sp_id,price,count,to_pay_amount,status,remark,pay_status) ' \
+        str_sql = 'insert into t_pc(name,gd_inst_id,em_id,sp_id,price,count,to_pay_amount,status,remark,pay_status) ' \
                   'values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-        cur.execute(str_sql,
-                    args=[pc_name, gd_id, opt_id, sp_id, price, pc_count, pc_count * price, '待审核', remark, '待审核'])
+        cur.execute(str_sql, args=[pc_name, gd_inst_id, opt_id, sp_id, price, pc_count, pc_count * price,
+                                   '待审核', remark, '待审核'])
         str_msg = '创建采购订单%s' % pc_name
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
@@ -586,7 +586,7 @@ def return_pc(js):
 
 
 def main():
-    # js = {'tenant': 'tk_huawei', 'gd_id': 2132, 'sp_id': 567, 'pc_count': 5000.0,
+    # js = {'tenant': 'tk_huawei', 'gd_inst_id': 2132, 'sp_id': 567, 'pc_count': 5000.0,
     #       'price': 200, 'remark': 'this is a test', 'em_id': 1}
     # print(add_pc(js))
     # js = {'tenant': 'tk_huawei', 'pc_id': 1, 'approval_result': True, 'audit_comments': '赶紧让对方发货', 'em_id': 1}

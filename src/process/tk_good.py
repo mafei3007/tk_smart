@@ -4,7 +4,7 @@
 @Project   ： tk_smart
 @Author ：Ma fei
 @Date   ：2022-03-30 22:23
-@Desc   ：物料管理
+@Desc   ：产品管理
 ==================================================
 """
 import datetime
@@ -142,7 +142,7 @@ def add_gd(js):
         write_log(str_msg, tenant=tenant)
         return js_ret
     if category not in ['产品', '原料']:
-        str_msg = '物料类别%s不正确，必须是\"产品\"或\"原料\"' % category
+        str_msg = '产品类别%s不正确，必须是\"产品\"或\"原料\"' % category
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -155,7 +155,7 @@ def add_gd(js):
         cur.execute(str_sql, args=[name, category, code, gb, u_code])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '物料名称%s、类别%s、代号%s、规格%s、单位%s已经存在，无法新增' % (name, category, code, gb, u_code)
+            str_msg = '产品名称%s、类别%s、代号%s、规格%s、单位%s已经存在，无法新增' % (name, category, code, gb, u_code)
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
@@ -205,7 +205,7 @@ def add_gd(js):
                   'remark) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql,
                     args=[name, category, code, gb, u_code, alarm, status, valid_days, stock_id, wp, remark])
-        str_msg = '物料名称%s、类别%s、代号%s、规格%s、单位%s添加成功' % (name, category, code, gb, u_code)
+        str_msg = '产品名称:%s、类别:%s、代号:%s、规格:%s、单位:%s添加成功' % (name, category, code, gb, u_code)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -256,7 +256,7 @@ def edit_gd(js):
         cur.execute(str_sql, args=[name, category, code, gb, u_code, gd_id])
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '物料名称%s、类别%s、代号%s、规格%s、单位%s已经存在，无法新增' % (name, category, code, gb, u_code)
+            str_msg = '产品名称:%s、类别:%s、代号:%s、规格:%s、单:位%s已经存在，无法新增' % (name, category, code, gb, u_code)
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
@@ -264,7 +264,7 @@ def edit_gd(js):
         cur.execute(str_sql, args=[u_code])
         r = cur.fetchone()
         if r[0] == 0:
-            str_msg = '无效的单位%s,请修改物料单位' % u_code
+            str_msg = '无效的单位%s,请修改产品单位' % u_code
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
@@ -325,7 +325,7 @@ def edit_gd(js):
         e_args.append(gd_id)
         if len(e_args) > 1:
             cur.execute(str_sql, args=e_args)
-        str_msg = '成功更新物料信息%s' % code
+        str_msg = '成功更新产品信息%s' % code
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
@@ -416,7 +416,7 @@ def del_gd(js):
         cur.execute(str_sql, args=[gd_id])
         str_sql = 'delete from t_bom where mate_id=%s'
         cur.execute(str_sql, args=[gd_id])
-        str_msg = '删除物料%s' % gd_id
+        str_msg = '删除产品%s' % gd_id
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)
