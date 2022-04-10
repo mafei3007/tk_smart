@@ -147,7 +147,6 @@ def edit_unit(js):
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
-
         if basic_unit != '' and basic_unit != u_code:  # 不是基础单位，那就需要判断该单位的基础单位是否存在
             str_sql = 'select count(*) from t_unit where u_code=%s'
             cur.execute(str_sql, args=[basic_unit])
@@ -157,7 +156,6 @@ def edit_unit(js):
                 js_ret['err_msg'] = str_msg
                 write_log(str_msg, tenant=tenant)
                 return js_ret
-
         e_args = []
         str_tmp = ''
         if u_type:

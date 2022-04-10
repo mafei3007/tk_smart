@@ -11,7 +11,7 @@
 import datetime
 from tk_util import write_log, free_obj, is_none, check_field_name
 from db.comm_cnn import CommonCnn
-from constant import comm_def_ext_code
+from constant import comm_def_ext_code, comm_invalid_ext_code
 
 
 # 查询
@@ -65,6 +65,11 @@ def add_ext_type(js):
         return js_ret
     if code in comm_def_ext_code:
         str_msg = '默认扩展类型不用添加'
+        js_ret['err_msg'] = str_msg
+        write_log(str_msg, tenant=tenant)
+        return js_ret
+    if code in comm_invalid_ext_code:
+        str_msg = '扩展类型代号不能使用%s' % str(comm_invalid_ext_code)
         js_ret['err_msg'] = str_msg
         write_log(str_msg, tenant=tenant)
         return js_ret
@@ -137,6 +142,11 @@ def edit_ext_type(js):
         code = code.lower()  # 转成小写
         str_msg = check_field_name(code)
         if str_msg:
+            js_ret['err_msg'] = str_msg
+            write_log(str_msg, tenant=tenant)
+            return js_ret
+        if code in comm_invalid_ext_code:
+            str_msg = '扩展类型代号不能使用%s' % str(comm_invalid_ext_code)
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret

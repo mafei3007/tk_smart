@@ -36,49 +36,49 @@ def get_em_list(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        qry_args = []
+        e_args = []
         str_count = 'select count(id) from t_em where 1=1'
         str_sql = 'select id,code,name,duty,phone,email,password,addr,status,remark,dt from t_em where 1=1'
         if em_id:
             str_sql = str_sql + ' and id=%s'
             str_count = str_count + ' and id=%s'
-            qry_args.append(em_id)
+            e_args.append(em_id)
         if name:
             str_sql = str_sql + ' and name=%s'
             str_count = str_count + ' and name=%s'
-            qry_args.append(name)
+            e_args.append(name)
         if code:
             str_sql = str_sql + ' and code=%s'
             str_count = str_count + ' and code=%s'
-            qry_args.append(code)
+            e_args.append(code)
         if duty:
             str_sql = str_sql + ' and duty=%s'
             str_count = str_count + ' and duty=%s'
-            qry_args.append(duty)
+            e_args.append(duty)
         if status:
             str_sql = str_sql + ' and status=%s'
             str_count = str_count + ' and status=%s'
-            qry_args.append(status)
+            e_args.append(status)
         if start_dt:
             str_sql = str_sql + ' and dt>=%s'
             str_count = str_count + ' and dt>=%s'
-            qry_args.append(start_dt)
+            e_args.append(start_dt)
         if end_dt:
             str_sql = str_sql + ' and dt<=%s'
             str_count = str_count + ' and dt<=%s'
-            qry_args.append(end_dt)
-        cur.execute(str_count, args=qry_args)
+            e_args.append(end_dt)
+        cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
         str_sql = str_sql + ' order by ' + order_field + ' ' + order
         if page_no > 0 and page_size > 0:  # 如果分页
             str_sql = str_sql + ' limit ' + str((page_no - 1) * page_size) + ',' + str(page_size)
-        if qry_args:
-            str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
+        if e_args:
+            str_msg = '查询SQL:%s,参数:%s' % (str_sql, e_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
         write_log(str_msg, tenant=tenant)
-        cur.execute(str_sql, args=qry_args)
+        cur.execute(str_sql, args=e_args)
         rr = cur.fetchall()
         for r in rr:
             lst_r = list()

@@ -31,6 +31,8 @@ def get_gd_list(js):
     stock_name = js.get('stock_name', None)  # 默认仓库
     wp = js.get('wp', None)  # 产品工序
     remark = js.get('remark', None)
+    start_dt = js.get('start_dt', None)
+    end_dt = js.get('end_dt', None)
     page_no = js.get('page_no', 0)
     page_size = js.get('page_size', 0)
     order_field = js.get('order_field', 'id')
@@ -41,7 +43,7 @@ def get_gd_list(js):
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
         str_count = 'select a.id,a.name,a.category,a.code,a.gb,a.u_code,a.alarm,a.status,a.valid_days,' \
-                    'a.stock_id,a.wp,a.remark,b.name as stock_name from t_good as a,t_stock as b where ' \
+                    'a.stock_id,a.wp,a.remark,a.dt,b.name as stock_name from t_good as a,t_stock as b where ' \
                     'a.stock_id=b.id'
         str_sql = 'select count(a.id) from t_good as a,t_stock as b where a.stock_id=b.id'
         e_args = []
@@ -93,6 +95,14 @@ def get_gd_list(js):
             str_sql = str_sql + ' and instr(a.remark,%s)'
             str_count = str_count + ' and instr(a.remark,%s)'
             e_args.append(remark)
+        if start_dt:
+            str_sql = str_sql + ' and dt>=%s'
+            str_count = str_count + ' and dt>=%s'
+            e_args.append(start_dt)
+        if end_dt:
+            str_sql = str_sql + ' and dt<=%s'
+            str_count = str_count + ' and dt<=%s'
+            e_args.append(end_dt)
         cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
@@ -217,7 +227,18 @@ def add_gd(js):
                   'remark) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         cur.execute(str_sql,
                     args=[name, category, code, gb, u_code, alarm, status, valid_days, stock_id, wp, remark])
-        str_msg = '产品名称:%s、类别:%s、代号:%s、规格:%s、单位:%s添加成功' % (name, category, code, gb, u_code)
+        str_sql = 'select count(*) from t_good where name=%s and category=%s and code=%s and gb=%s and u_code=%s'
+        cur.execute(str_sql, args=[name, category, code, gb, u_code])
+        r = cur.fetchone()
+        gd_id = r[0]  # 刚新增的产品ID
+        str_sql = 'insert into t_good_inst(gd_id) values(%s)'
+        cur.execute(str_sql, args=[gd_id])
+        str_sql = 'select id from t_good_inst where gd_id=%s'
+        cur.execute(str_sql, args=[gd_id])
+        r = cur.fetchone()
+        gd_inst_id = r[0]
+        str_msg = '产品名称:%s、类别:%s、代号:%s、规格:%s、单位:%s添加成功，产品ID:%s，产品实例ID:' \
+                  '%s' % (name, category, code, gb, u_code, gd_id, gd_inst_id)
         str_sql = 'insert into t_logs(em_id,op_content) values(%s,%s)'
         cur.execute(str_sql, args=[opt_id, str_msg])
         write_log(str_msg, tenant=tenant)

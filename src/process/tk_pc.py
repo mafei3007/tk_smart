@@ -51,7 +51,7 @@ def get_pc_paid_info(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        qry_args = []
+        e_args = []
         str_count = 'select count(b.id) from t_pc as a,t_pc_pay as b,t_em as c, t_supp as d,t_good as e ' \
                     'where a.id=b.pc_id and a.sp_id=d.id and b.em_id=c.id and a.gd_inst_id=e.id '
         str_sql = 'select b.id,a.gd_inst_id,a.dt as pc_dt, a.count as pc_count,a.sp_id,a.to_pay_amount,a.paid_amount,' \
@@ -61,35 +61,35 @@ def get_pc_paid_info(js):
         if pc_id > 0:
             str_sql = str_sql + ' and a.id=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(pc_id)
+            e_args.append(pc_id)
         if sp_id > 0:
             str_sql = str_sql + ' and a.sp_id=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(sp_id)
+            e_args.append(sp_id)
         if em_id > 0:
             str_sql = str_sql + ' and b.em_id=%s'
             str_count = str_count + ' and b.em_id=%s'
-            qry_args.append(em_id)
+            e_args.append(em_id)
         if start_dt:
             str_sql = str_sql + ' and b.dt>=%s'
             str_count = str_count + ' and b.dt>=%s'
-            qry_args.append(start_dt)
+            e_args.append(start_dt)
         if end_dt:
             str_sql = str_sql + ' and b.dt<=%s'
             str_count = str_count + ' and b.dt<=%s'
-            qry_args.append(end_dt)
-        cur.execute(str_count, args=qry_args)
+            e_args.append(end_dt)
+        cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
         str_sql = str_sql + ' order by ' + order_field + ' ' + order
         if page_no > 0 and page_size > 0:  # 如果分页
             str_sql = str_sql + ' limit ' + str((page_no - 1) * page_size) + ',' + str(page_size)
-        if qry_args:
-            str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
+        if e_args:
+            str_msg = '查询SQL:%s,参数:%s' % (str_sql, e_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
         write_log(str_msg, tenant=tenant)
-        cur.execute(str_sql, args=qry_args)
+        cur.execute(str_sql, args=e_args)
         rr = cur.fetchall()
         for r in rr:
             lst_r = list()
@@ -126,7 +126,7 @@ def get_pc_checkin(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        qry_args = []
+        e_args = []
         str_count = 'select count(a.gd_inst_id) from t_checkin as a,t_pc as b,t_em as c, t_stock as d, t_supp as e,' \
                     't_good as f where a.pc_id=b.id and a.em_id=c.id and a.stock_id=d.id and b.sp_id=e.id ' \
                     'and b.gd_inst_id=f.id '
@@ -138,35 +138,35 @@ def get_pc_checkin(js):
         if pc_id > 0:
             str_sql = str_sql + ' and b.id=%s'
             str_count = str_count + ' and b.id=%s'
-            qry_args.append(pc_id)
+            e_args.append(pc_id)
         if sp_id > 0:
             str_sql = str_sql + ' and b.sp_id=%s'
             str_count = str_count + ' and b.id=%s'
-            qry_args.append(sp_id)
+            e_args.append(sp_id)
         if em_id > 0:
             str_sql = str_sql + ' and b.em_id=%s'
             str_count = str_count + ' and b.em_id=%s'
-            qry_args.append(em_id)
+            e_args.append(em_id)
         if start_dt:
             str_sql = str_sql + ' and a.dt>=%s'
             str_count = str_count + ' and a.dt>=%s'
-            qry_args.append(start_dt)
+            e_args.append(start_dt)
         if end_dt:
             str_sql = str_sql + ' and a.dt<=%s'
             str_count = str_count + ' and a.dt<=%s'
-            qry_args.append(end_dt)
-        cur.execute(str_count, args=qry_args)
+            e_args.append(end_dt)
+        cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
         str_sql = str_sql + ' order by ' + order_field + ' ' + order
         if page_no > 0 and page_size > 0:  # 如果分页
             str_sql = str_sql + ' limit ' + str((page_no - 1) * page_size) + ',' + str(page_size)
-        if qry_args:
-            str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
+        if e_args:
+            str_msg = '查询SQL:%s,参数:%s' % (str_sql, e_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
         write_log(str_msg, tenant=tenant)
-        cur.execute(str_sql, args=qry_args)
+        cur.execute(str_sql, args=e_args)
         rr = cur.fetchall()
         for r in rr:
             lst_r = list()
@@ -205,7 +205,7 @@ def get_pc(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        qry_args = []
+        e_args = []
         str_count = 'select count(a.id) from t_pc as a,t_good as b,t_em as c,t_supp as d where a.gd_inst_id=b.id and ' \
                     'a.em_id=c.id and a.sp_id=d.id'
         str_sql = 'select a.*,b.name as gd_name,b.code as gd_code,b.gb as gd_gb,c.name as em_name,d.name as ' \
@@ -214,43 +214,43 @@ def get_pc(js):
         if pc_id > 0:
             str_sql = str_sql + ' and a.id=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(pc_id)
+            e_args.append(pc_id)
         if gd_inst_id > 0:
             str_sql = str_sql + ' and a.gd_inst_id=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(gd_inst_id)
+            e_args.append(gd_inst_id)
         if sp_id > 0:
             str_sql = str_sql + ' and a.sp_id=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(sp_id)
+            e_args.append(sp_id)
         if em_id > 0:
             str_sql = str_sql + ' and a.em_id=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(em_id)
+            e_args.append(em_id)
         if status:
             str_sql = str_sql + ' and a.status=%s'
             str_count = str_count + ' and a.id=%s'
-            qry_args.append(status)
+            e_args.append(status)
         if start_dt:
             str_sql = str_sql + ' and a.dt>=%s'
             str_count = str_count + ' and a.dt>=%s'
-            qry_args.append(start_dt)
+            e_args.append(start_dt)
         if end_dt:
             str_sql = str_sql + ' and a.dt<=%s'
             str_count = str_count + ' and a.dt<=%s'
-            qry_args.append(end_dt)
-        cur.execute(str_count, args=qry_args)
+            e_args.append(end_dt)
+        cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
         str_sql = str_sql + ' order by ' + order_field + ' ' + order
         if page_no > 0 and page_size > 0:  # 如果分页
             str_sql = str_sql + ' limit ' + str((page_no - 1) * page_size) + ',' + str(page_size)
-        if qry_args:
-            str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
+        if e_args:
+            str_msg = '查询SQL:%s,参数:%s' % (str_sql, e_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
         write_log(str_msg, tenant=tenant)
-        cur.execute(str_sql, args=qry_args)
+        cur.execute(str_sql, args=e_args)
         rr = cur.fetchall()
         for r in rr:
             lst_r = list()

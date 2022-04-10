@@ -27,6 +27,8 @@ def get_gd_inst_list(js):
     alarm = js.get('alarm', None)  # 库存告警
     status = js.get('status', None)  # 产品状态
     u_code = js.get('u_code', None)  # 单位
+    start_dt = js.get('start_dt', None)
+    end_dt = js.get('end_dt', None)
     page_no = js.get('page_no', 0)
     page_size = js.get('page_size', 0)
     order_field = js.get('order_field', 'id')
@@ -68,6 +70,14 @@ def get_gd_inst_list(js):
             str_sql = str_sql + ' and b.status=%s'
             str_count = str_count + ' and b.status=%s'
             e_args.append(status)
+        if start_dt:
+            str_sql = str_sql + ' and a.dt>=%s'
+            str_count = str_count + ' and a.dt>=%s'
+            e_args.append(start_dt)
+        if end_dt:
+            str_sql = str_sql + ' and a.dt<=%s'
+            str_count = str_count + ' and a.dt<=%s'
+            e_args.append(end_dt)
         cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]

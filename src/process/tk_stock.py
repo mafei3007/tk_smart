@@ -28,15 +28,15 @@ def get_stock(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        qry_args = []
+        e_args = []
         str_sql = 'select id,name,status,dt,remark from t_stock'
         str_sql = str_sql + ' order by ' + order_field + ' ' + order
-        if qry_args:
-            str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
+        if e_args:
+            str_msg = '查询SQL:%s,参数:%s' % (str_sql, e_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
         write_log(str_msg, tenant=tenant)
-        cur.execute(str_sql, args=qry_args)
+        cur.execute(str_sql, args=e_args)
         rr = cur.fetchall()
         js_ret['len'] = len(rr)
         for r in rr:

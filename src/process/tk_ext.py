@@ -33,34 +33,34 @@ def get_ext_list(js):
     try:
         cnn = CommonCnn().cnn_pool[tenant].connection()
         cur = cnn.cursor()
-        qry_args = []
+        e_args = []
         str_count = 'select count(a.id) from t_ext as a,t_ext_type as b where a.ext_type_id=b.id '
         str_sql = 'select a.id,a.value,a.remark,b.id as ext_type_id, b.code as ext_type_code from t_ext as a,' \
                   't_ext_type as b where a.ext_type_id=b.id'
         if ext_type_id:
             str_sql = str_sql + ' and b.id=%s'
             str_count = str_count + ' and b.id=%s'
-            qry_args.append(ext_type_id)
+            e_args.append(ext_type_id)
         if ext_type_code:
             str_sql = str_sql + ' and b.code=%s'
             str_count = str_count + ' and b.code=%s'
-            qry_args.append(ext_type_code)
+            e_args.append(ext_type_code)
         if value:
             str_sql = str_sql + ' and a.value=%s'
             str_count = str_count + ' and a.value=%s'
-            qry_args.append(value)
-        cur.execute(str_count, args=qry_args)
+            e_args.append(value)
+        cur.execute(str_count, args=e_args)
         r = cur.fetchone()
         js_ret['len'] = r[0]
         str_sql = str_sql + ' order by ' + order_field + ' ' + order
         if page_no > 0 and page_size > 0:  # 如果分页
             str_sql = str_sql + ' limit ' + str((page_no - 1) * page_size) + ',' + str(page_size)
-        if qry_args:
-            str_msg = '查询SQL:%s,参数:%s' % (str_sql, qry_args)
+        if e_args:
+            str_msg = '查询SQL:%s,参数:%s' % (str_sql, e_args)
         else:
             str_msg = '查询SQL:%s,参数:空' % str_sql
         write_log(str_msg, tenant=tenant)
-        cur.execute(str_sql, args=qry_args)
+        cur.execute(str_sql, args=e_args)
         rr = cur.fetchall()
         for r in rr:
             lst_r = list()
