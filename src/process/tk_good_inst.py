@@ -9,7 +9,7 @@
 """
 
 import datetime
-from tk_util import write_log, free_obj, is_none, is_not_none
+from tk_util import write_log, free_obj
 from db.comm_cnn import CommonCnn
 
 
@@ -153,7 +153,6 @@ def add_gd_inst(js):
         for k in js_gd_ext.keys():  # 补充扩展属性
             str_sql = str_sql + ' and ' + k + '=%s'
             e_args.append(js_gd_ext[k])
-        print(str_sql, e_args)
         cur.execute(str_sql, args=e_args)
         r = cur.fetchone()
         if r[0] > 0:

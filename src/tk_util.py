@@ -165,6 +165,24 @@ def write_log(str_msg, tenant=None):
         print(str_err)
 
 
+def write_db_log(str_sql, args=[], tenant=None):
+    # dir_log = os.path.abspath(os.path.dirname(os.getcwd())) + os.sep + 'logs'
+    dir_log = r'D:\py_workspace\tk_smart\logs'
+    if not Path(dir_log).exists():
+        os.mkdir(dir_log)
+    if tenant:
+        log_file = dir_log + os.sep + time.strftime('%Y%m%d', time.localtime(time.time())) + '_' + tenant + '_db.log'
+    else:
+        log_file = dir_log + os.sep + time.strftime('%Y%m%d', time.localtime(time.time())) + '_db.log'
+    str_log = '%s SQL:%s,Param:%s\n' % (get_curr(), str_sql, str(args))
+    try:
+        with open(log_file, 'a', encoding='utf8') as f:
+            f.write(str_log)
+    except Exception as em:
+        str_err = '%s,详细异常:%s.' % (repr(em), traceback.format_exc())
+        print(str_err)
+
+
 def get_bc_img(bc_content):
     # version参数----二维码的格子矩阵大小，可以是1到40，1最小为21*21，40是177*177
     # error_correction参数----二维码错误容许率，默认ERROR_CORRECT_M，容许小于15%的错误率
