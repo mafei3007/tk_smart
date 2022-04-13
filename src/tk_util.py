@@ -191,8 +191,10 @@ def get_bc_img(bc_content):
     img_res = os.path.abspath(os.path.dirname(os.getcwd())) + os.sep + 'img_res'
     if not Path(img_res).exists():
         os.mkdir(img_res)
-    img_file = time.strftime('%Y%m%d%H%M%S_', time.localtime(time.time())) + str(uuid.uuid4()) + '.bmp'
-    img_file = img_res + os.sep + img_file
+    img_res = img_res + os.sep + time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
+    if not Path(img_res).exists():
+        os.mkdir(img_res)
+    img_file = img_res + os.sep + str(uuid.uuid4()) + '.bmp'
     if os.path.exists(img_file):
         os.remove(img_file)
     img = qrcode.make(bc_content, version=4, box_size=20, border=2)
@@ -200,6 +202,7 @@ def get_bc_img(bc_content):
     return img_file
 
 
+# 判断对象是否都为空
 def is_none(lst_o):
     if lst_o is None:
         return True

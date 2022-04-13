@@ -128,9 +128,9 @@ def add_gd_inst(js):
         str_sql = 'select code from t_ext_type where status=%s'
         cur.execute(str_sql, args=['有效'])
         rr = cur.fetchall()
-        for r in rr:
+        for r in rr:  # 获取当前系统中的产品扩展类型
             lst_ext_type.append(r[0])
-        for k in js.keys():  # 获取产品扩展属性值
+        for k in js.keys():  # 获取产品扩展属性
             if k in lst_ext_type:
                 js_gd_ext[k] = js[k]
         str_sql = 'select name,category,code,gb,u_code from t_good where id=%s'
@@ -156,7 +156,14 @@ def add_gd_inst(js):
         cur.execute(str_sql, args=e_args)
         r = cur.fetchone()
         if r[0] > 0:
-            str_msg = '该产品实例信息已经存在，无法创建'
+            str_msg = s_info
+            for k in js_gd_ext.keys():  # 补充扩展属性
+                str_sql = 'select a.value,b.name as ext_type_name from t_ext as a,t_ext_type as b where ' \
+                          'a.ext_type_id=b.id and a.id=%s and b.code=%s'
+                cur.execute(str_sql, args=[js_gd_ext[k], k])
+                ext_r = cur.fetchone()
+                str_msg = str_msg + '、扩展类型%s=%s' % (ext_r[4], ext_r[1])
+            str_msg = str_msg + ' 实例信息已经存在，无法创建'
             js_ret['err_msg'] = str_msg
             write_log(str_msg, tenant=tenant)
             return js_ret
