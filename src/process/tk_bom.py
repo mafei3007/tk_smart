@@ -275,7 +275,7 @@ def del_em(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'em_id': 1, 'opt_id': 1}
+    js = {'tenant': 'tk_huawei', 'id': 1, 'em_id': 1, 'opt_id': 1}
     print(del_em(js))
 
 

@@ -23,7 +23,7 @@ def get_em_list(js):
     em_id = js.get('id', None)
     name = js.get('name', None)
     code = js.get('code', None)
-    status = js.get('status',None)
+    status = js.get('status', None)
     duty = js.get('duty', None)
     start_dt = js.get('start_dt', None)
     end_dt = js.get('end_dt', None)

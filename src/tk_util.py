@@ -165,7 +165,7 @@ def write_log(str_msg, tenant=None):
         print(str_err)
 
 
-def write_db_log(str_sql, args=[], tenant=None):
+def write_db_log(str_sql, args=None, tenant=None):
     # dir_log = os.path.abspath(os.path.dirname(os.getcwd())) + os.sep + 'logs'
     dir_log = r'D:\py_workspace\tk_smart\logs'
     if not Path(dir_log).exists():
@@ -174,7 +174,10 @@ def write_db_log(str_sql, args=[], tenant=None):
         log_file = dir_log + os.sep + time.strftime('%Y%m%d', time.localtime(time.time())) + '_' + tenant + '_db.log'
     else:
         log_file = dir_log + os.sep + time.strftime('%Y%m%d', time.localtime(time.time())) + '_db.log'
-    str_log = '%s SQL:%s,Param:%s\n' % (get_curr(), str_sql, str(args))
+    if args:
+        str_log = '%s SQL:%s,Param:%s\n' % (get_curr(), str_sql, str(args))
+    else:
+        str_log = '%s SQL:%s,Param:Null\n' % (get_curr(), str_sql)
     try:
         with open(log_file, 'a', encoding='utf8') as f:
             f.write(str_log)
