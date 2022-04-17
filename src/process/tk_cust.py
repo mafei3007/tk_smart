@@ -13,7 +13,7 @@ from db.comm_cnn import CommonCnn
 
 
 # 查询信息
-def get_cust_list(js):
+def get_cust(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1
@@ -298,7 +298,7 @@ def del_cust(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei', 'id': 1, 'opt_id': 1}
+    js = {'tenant': 'tk_huawei', 'id':  1, 'opt_id': 1}
     print(del_cust(js))
 
 

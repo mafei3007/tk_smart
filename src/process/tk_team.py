@@ -14,7 +14,7 @@ from db.comm_cnn import CommonCnn
 
 
 # 查询信息
-def get_team_list(js):
+def get_team(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1

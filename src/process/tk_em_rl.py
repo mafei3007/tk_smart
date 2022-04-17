@@ -43,7 +43,7 @@ def get_em_role(js):
         cnn.close()
 
 
-# 更新人员角色信息
+# 更新人员角色关系
 def edit_role(js):
     js_ret = dict()
     js_ret['err_msg'] = ''

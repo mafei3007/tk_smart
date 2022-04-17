@@ -14,7 +14,7 @@ from constant import default_pwd
 
 
 # 查询人员列表信息
-def get_em_list(js):
+def get_em(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1
@@ -31,6 +31,8 @@ def get_em_list(js):
     page_size = js.get('page_size', 0)
     order_field = js.get('order_field', 'id')
     order = js.get('order', 'asc')
+    if page_size < 1:  # 每页最多返回100条记录
+        page_size = 100
     cnn = None
     cur = None
     try:

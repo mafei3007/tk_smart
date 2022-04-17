@@ -14,7 +14,7 @@ from db.comm_cnn import CommonCnn
 
 
 # 查询信息
-def get_gd_inst_list(js):
+def get_gd_inst(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1

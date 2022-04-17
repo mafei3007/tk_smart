@@ -221,7 +221,7 @@ def del_unit(js):
 
 
 def main():
-    js = {'tenant': 'tk_huawei'}
+    js = {'tenant': 'tk_huawei', 'opt_id': 1}
     print(del_unit(js))
 
 

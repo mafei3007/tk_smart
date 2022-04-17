@@ -15,7 +15,7 @@ from db.comm_cnn import CommonCnn
 
 
 # 查询
-def get_ext_list(js):
+def get_ext(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1

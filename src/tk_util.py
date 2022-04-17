@@ -231,16 +231,20 @@ def is_not_none(lst_o):
 def main():
     # url = 'http://192.168.1.5:5005/login'
     # method = 'GET'
-    # js_bd = {'user': '马飞', 'code': 'hero'}
-    # js_hd = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
-    # print(send_message(url, method=method, js_body=js_bd, js_header=js_hd))
+    # js_body = {'user': '马飞', 'code': 'hero'}
+    # js_head = {'user-id': 'mafei', 'tenant_id': 'tk_huawei'}
+    url = 'http://192.168.1.5:5005/api/tk_huawei/qry_em'
+    method = 'GET'
+    js_body = {'page_no': 1, 'page_size': 20}
+    js_head = {'user': 'mafei', 'tenant_id': 'tk_huawei'}
+    print(send_message(url, method=method, js_body=js_body, js_header=js_head))
     # print(des_encrypt('gj12345'))
     # print(des_decrypt('21f6f4abe215bbf466c57fb50403ff42'))
     # send_email('mafeihong123@126.com', subject='邮件主题', content='This is a test memo.')
-    pwd = 'te1st'
-    pattern = re.compile(r'\d')
-    if not pattern.findall(pwd):
-        print('密码必须要包含至少一个数字')
+    # pwd = 'te1st'
+    # pattern = re.compile(r'\d')
+    # if not pattern.findall(pwd):
+    #     print('密码必须要包含至少一个数字')
 
 
 if __name__ == '__main__':

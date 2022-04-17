@@ -15,7 +15,7 @@ from constant import comm_def_ext_code, comm_invalid_ext_code
 
 
 # 查询
-def get_ext_type_list(js):
+def get_ext_type(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
     js_ret['len'] = -1

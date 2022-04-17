@@ -77,14 +77,30 @@ def set_config(tenant, k, v):
 def get_company(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
-    js_ret['len'] = -1
-    js_ret['data'] = dict()
     tenant = js['tenant']
-    js_ret['data']['company_name'] = get_config(tenant, company_name, '公司名称')
-    js_ret['data']['company_bank'] = get_config(tenant, company_bank, '开户行')
-    js_ret['data']['company_account'] = get_config(tenant, company_account, '银行账户')
-    js_ret['data']['company_credit_code'] = get_config(tenant, company_credit_code, '统一信用代码')
-    js_ret['data']['company_address'] = get_config(tenant, company_address, '注册地址')
+    js_ret['company_name'] = get_config(tenant, company_name, '公司名称')
+    js_ret['company_bank'] = get_config(tenant, company_bank, '开户行')
+    js_ret['company_account'] = get_config(tenant, company_account, '银行账户')
+    js_ret['company_credit_code'] = get_config(tenant, company_credit_code, '统一信用代码')
+    js_ret['company_address'] = get_config(tenant, company_address, '注册地址')
+    return js_ret
+
+
+# 设置公司信息
+def set_company(js):
+    js_ret = dict()
+    js_ret['err_msg'] = ''
+    tenant = js['tenant']
+    if js.get('company_name', None):
+        set_config(tenant, company_name, js['company_name'])
+    if js.get('company_bank', None):
+        set_config(tenant, company_bank, js['company_bank'])
+    if js.get('company_account', None):
+        set_config(tenant, company_account, js['company_account'])
+    if js.get('company_credit_code', None):
+        set_config(tenant, company_credit_code, js['company_credit_code'])
+    if js.get('company_address', None):
+        set_config(tenant, company_address, js['company_address'])
     return js_ret
 
 

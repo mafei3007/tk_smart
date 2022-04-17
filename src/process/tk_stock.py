@@ -53,7 +53,7 @@ def get_stock(js):
         cnn.close()
 
 
-# 添加
+# 添加仓库信息
 def add_stock(js):
     js_ret = dict()
     js_ret['err_msg'] = ''
