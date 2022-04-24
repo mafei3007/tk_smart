@@ -247,5 +247,15 @@ def main():
     #     print('密码必须要包含至少一个数字')
 
 
+def sjt():
+    i = 10
+    while True:
+        i += 1
+        val = i * i * i + 4 * i * i
+        print('实话实说：这种我都做不出来%d ----%d' % (i, val))
+        if i > 30:
+            break
+
+
 if __name__ == '__main__':
-    main()
+    sjt()
